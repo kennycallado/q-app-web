@@ -24,7 +24,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/q_app-web",
+            "outputPath": "dist/",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -34,12 +34,26 @@
             "inlineStyleLanguage": "sass",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest",
+              {
+                "input": "./node_modules/surrealdb.wasm/dist/full/",
+                "glob": "**/*.{wasm,js,js.map}",
+                "output": "surrealdb/dist/full"
+              },
+              {
+                "input": "./node_modules/surrealdb.wasm/lib/",
+                "glob": "**/full.js",
+                "output": "surrealdb/lib"
+              }
             ],
             "styles": [
               "src/styles.sass"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.min.js"
+            ],
+            "externalDependencies": ["surrealdb/lib/full.js"]
           },
           "configurations": {
             "production": {
@@ -55,7 +69,8 @@
                   "maximumError": "10kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
@@ -72,6 +87,7 @@
               "buildTarget": "q_app-web:build:production"
             },
             "development": {
+              "port": 8000,
               "buildTarget": "q_app-web:build:development"
             }
           },
@@ -94,7 +110,8 @@
             "inlineStyleLanguage": "sass",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.sass"

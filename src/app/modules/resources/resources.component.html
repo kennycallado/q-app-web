@@ -1,0 +1,30 @@
+<div class="card mx-auto mt-4">
+  <div class="card-header text-center text-primary">
+    <h3>Resources</h3>
+  </div>
+
+  <ul class="list-group list-group-flush">
+    @for (paper of papers(); track paper.id) {
+    <li class="list-group-item d-flex">
+      @if (paper.completed) { <span class="mt-auto lead">✅</span> }
+      @else { <span class="mt-auto">❎</span> }
+
+      @switch (get_resource_type(paper.resource)) {
+        @case ("module") {
+        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.resource]">
+          <span class="lead">{{ paper.resource }} - {{  get_resource_title(paper.resource) }}</span>
+        </a>
+        }
+        @case ("slides") {
+        }
+        @case ("form") {
+        }
+        @default {
+          <p>unmanaged</p>
+        }
+      }
+    </li>
+    }
+  </ul>
+
+</div>

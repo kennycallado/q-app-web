@@ -1,0 +1,52 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary shadow">
+  <div class="container-fluid">
+    <a class="navbar-brand p-0" href="#">
+      <img style="width: 120px;" class="img-fluid" src="assets/images/brands/brand-valencia.jpg" />
+    </a>
+
+    <button class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+      #burger><span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav pt-2 ms-auto">
+
+        <!--
+        <li class="nav-item ms-auto me-5">
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-whatever="user"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal">User</button>
+        </li>
+
+        <li class="nav-item ms-auto me-5">
+          <a class="nav-link text-danger fw-bold" [routerLink]="['/admin/project']">WORKING</a>
+        </li>
+        -->
+
+        <li class="nav-item ms-auto me-5">
+          <a class="nav-link" [routerLink]="['/login']">Login</a>
+        </li>
+        <li class="nav-item ms-auto me-5">
+          <a class="nav-link" [routerLink]="['/resources']">Resources</a>
+        </li>
+        <li class="nav-items mx-auto me-5">
+          <a class="nav-link" [routerLink]="['/about']">About</a>
+        </li>
+        <li *ngIf="is_authenticated()" class="nav-item ms-auto me-5">
+          <a class="nav-link" (click)="logout()">Logout</a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>

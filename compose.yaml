@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  dev-build:
+    image: nginx:alpine
+    container_name: dev-build
+    ports:
+      - "8000:80"
+    volumes:
+      - ./dist/browser/:/usr/share/nginx/html/
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+  surrealdb:
+    image: kennycallado/surreal:amd64
+    container_name: surrealdb
+    ports:
+      - "8080:8000"
+    command:
+      # - start
+      # - memory
+      - -A
+      # - --auth
+      - --no-banner
+      # - --log=trace
+      # - --log=info
+      - --user=root
+      - --pass=root
+      - --bind=0.0.0.0:8000
