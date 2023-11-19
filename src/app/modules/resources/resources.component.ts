@@ -1,10 +1,8 @@
-import { Component, Signal, inject, signal } from '@angular/core';
+import { Component, Signal, WritableSignal, computed, effect, inject, signal } from '@angular/core';
 
-import { OutcomeService } from '../../providers/services/outcome.service';
-import { ContentService } from '../../providers/services/content.service';
+import { PapersService } from '../../providers/services/papers.service';
 
 import { Resource } from '../../providers/models/resource.model';
-import { Paper } from '../../providers/models/paper.model';
 
 @Component({
   selector: 'app-resources',
@@ -12,17 +10,7 @@ import { Paper } from '../../providers/models/paper.model';
   styleUrl: './resources.component.sass'
 })
 export class ResourcesComponent {
-  #outcomeSvc = inject(OutcomeService)
-  #contentSvc = inject(ContentService)
+  #papersSvc    = inject(PapersService)
 
-  resources: Signal<Resource[]> = this.#contentSvc.resources
-  papers:    Signal<Paper[]> = this.#outcomeSvc.papers
-
-  get_resource_type(id: string): string {
-    return this.resources().find(r => r.id === id)?.type
-  }
-
-  get_resource_title(id: string): string {
-    return this.resources().find(r => r.id === id)?.title
-  }
+  papers = this.#papersSvc.papers
 }

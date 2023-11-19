@@ -13,8 +13,8 @@ const routes: Routes = [
     loadChildren: () => import('./modules/resources/resources.module').then(m => m.ResourcesModule),
     canActivate: [],
   },
-  { path: '**',     redirectTo: '/home' },
-  { path: '',       redirectTo: '/home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/home' },
+  { path: '',   redirectTo: '/home', pathMatch: 'full' },
 ];
 
 @NgModule({

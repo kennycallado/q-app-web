@@ -7,7 +7,7 @@ export class Question {
 
 export enum QuestionType {
   Checkbox = 'checkbox',
-  Input = 'input',
+  Input = 'input', // should be text
   Radio = 'radio',
   Range = 'range',
 }

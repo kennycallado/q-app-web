@@ -6,23 +6,39 @@
   <ul class="list-group list-group-flush">
     @for (paper of papers(); track paper.id) {
     <li class="list-group-item d-flex">
-      @if (paper.completed) { <span class="mt-auto lead">✅</span> }
-      @else { <span class="mt-auto">❎</span> }
+      @if (paper.completed) { <span class="mt-auto">✅</span> }
+      @else                 { <span class="mt-auto">❎</span> }
 
-      @switch (get_resource_type(paper.resource)) {
+      <a class="nav-link w-100 mx-3 text-center text-truncate" [routerLink]="['slider', paper.id]">
+        <span class="lead">{{ $any(paper.resource).title }}</span>
+      </a>
+
+      <span class="mt-auto ms-auto text-success">{{ $any(paper.resource).type }}</span>
+
+      <!-- maybe form use different route -->
+      <!--
+      @switch ($any(paper.resource).type) {
         @case ("module") {
-        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.resource]">
-          <span class="lead">{{ paper.resource }} - {{  get_resource_title(paper.resource) }}</span>
+        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
+          <span class="lead">{{ $any(paper.resource).title }}</span>
         </a>
         }
         @case ("slides") {
+        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
+          <span class="lead">{{ $any(paper.resource).title }}</span>
+        </a>
         }
         @case ("form") {
+        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
+          <span class="lead">{{ $any(paper.resource).title }}</span>
+        </a>
         }
         @default {
           <p>unmanaged</p>
         }
       }
+      -->
+
     </li>
     }
   </ul>

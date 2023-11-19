@@ -2,6 +2,9 @@
 
 ## NOTES:
 
+### LIVE SELECT
+until it's implemented into wasm I'll use the js sdk
+
 ### Dev mode
 - `npm run watch` because Surreal breaks ng serve at the same time:
   ``` bash

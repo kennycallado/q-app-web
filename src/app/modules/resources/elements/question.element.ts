@@ -1,5 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import { Question } from '../../../providers/models/question.model';
 
 @customElement('question-element')
 export class QuestionElement extends LitElement {
@@ -12,16 +13,19 @@ export class QuestionElement extends LitElement {
 
   // Declare reactive properties
   @property()
-  question: string;
+  question: Question;
 
   @property()
   answer?: string = '';
 
+  @property()
+  locale?: string = 'en';
+
   // Render the UI as a function of component state
   render() {
     return html`
-<p>question: ${this.question}</p>
-<p>answer: ${this.answer}</p>
-`;
+      <p>question: ${this.question.question.find((content) => content.locale === this.locale).content}</p>
+      <p>answer: ${this.answer}</p>
+    `;
   }
 }

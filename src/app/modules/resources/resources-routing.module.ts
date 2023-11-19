@@ -6,7 +6,7 @@ import { SliderComponent } from './components/slider/slider.component';
 
 const routes: Routes = [
   { path: '', component: ResourcesComponent },
-  { path: 'slider/:resource', component: SliderComponent },
+  { path: 'slider/:paper_id', component: SliderComponent },
 ];
 
 @NgModule({

@@ -1,8 +1,8 @@
 export class Media {
   id: string;
   alt?: string;
-  url: string;
   type: MediaType;
+  url: string;
 }
 
 export enum MediaType {
