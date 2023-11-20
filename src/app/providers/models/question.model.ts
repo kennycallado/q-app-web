@@ -2,6 +2,7 @@ export class Question {
   id: string;
   type: QuestionType;
   range?: RangeQuestion;
+  input?: unknown;
   question: Content[];
 }
 

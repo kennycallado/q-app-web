@@ -1,13 +1,30 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import { Question } from '../../../providers/models/question.model';
+
+import { Content, Question } from '../../../providers/models/question.model';
+import { Answer } from '../../../providers/models/answer.model';
 
 @customElement('question-element')
 export class QuestionElement extends LitElement {
-  // Define scoped styles right with your component, in plain CSS
   static styles = css`
-    :host {
-      color: blue;
+    p {
+      margin-top: 0;
+      font-size: 1.25rem;
+      font-weight: 300;
+    }
+
+    .answer {
+      color: #2196f3;
+    }
+
+    input {
+      color: #2196f3;
+      width: 100%;
+      font-size: 1.25rem;
+      font-weight: 300;
+      border: none;
+      border-bottom: 1px solid #2196f3;
+      outline: none;
     }
   `;
 
@@ -16,16 +33,109 @@ export class QuestionElement extends LitElement {
   question: Question;
 
   @property()
-  answer?: string = '';
+  answer: Answer | undefined;
 
   @property()
   locale?: string = 'en';
 
+  @property()
+  private spellAnswer: string = '';
+
+  // connectedCallback(): void {
+  //   super.connectedCallback();
+
+  //   if (!this.answer) { this.answer = new Answer() }
+
+  //   this.spell(this.answer.answer)
+  // }
+
+  spell(answer: string) {
+    switch (answer) {
+      case '0':
+        this.spellAnswer = 'N/C';
+        break;
+      case '1':
+        this.spellAnswer = 'Nada';
+        break;
+      case '2':
+        this.spellAnswer = 'Poco';
+        break;
+      case '3':
+        this.spellAnswer = 'Medio';
+        break;
+      case '4':
+        this.spellAnswer = 'Bastante';
+        break;
+      case '5':
+        this.spellAnswer = 'Mucho';
+        break;
+      case '6':
+        this.spellAnswer = 'Totalmente';
+        break;
+    }
+  }
+
+  changes(event: HTMLInputElement) {
+    this.answer.answer = event.value.toString()
+    this.spell(this.answer.answer)
+
+    const options = {
+      bubbles: true,
+      composed: true,
+      detail: { answer: this.answer }
+    }
+
+    this.dispatchEvent(new CustomEvent('change', options))
+  }
+
+  get_value(): string {
+    if (this.answer?.answer) return this.answer.answer
+    if (this.question.type !== 'range') return ''
+    if (this.question[this.question.type].value) return this.question[this.question.type].value.toString()
+
+    return '-1'
+  }
+
+  get_min(): string {
+    if (this.question.type !== 'range') return ''
+    if (this.question[this.question.type].min) return this.question[this.question.type].min.toString()
+
+    return '0'
+  }
+
+  get_max(): string {
+    if (this.question.type !== 'range') return ''
+    if (this.question[this.question.type].max) return this.question[this.question.type].max.toString()
+
+    return '6'
+  }
+
   // Render the UI as a function of component state
   render() {
+    if (!this.answer) {
+      this.answer = new Answer()
+      this.answer.question = this.question.id
+    }
+
+    const content = () => {
+      let question: any;
+      question = this.question.question.find((content) => content.locale === this.locale).content
+      if (!question) question = this.question.question[0].content
+
+      return question
+    }
+
     return html`
-      <p>question: ${this.question.question.find((content) => content.locale === this.locale).content}</p>
-      <p>answer: ${this.answer}</p>
-    `;
+      <p>${content()} <span class="answer">${this.spellAnswer}</span></p>
+
+      <input
+        @change="${(event: any) => this.changes(event.target)}"
+        type="${this.question.type}"
+        value="${this.get_value()}"
+        min="${this.get_min()}"
+        max="${this.get_max()}"
+      />
+
+      `;
   }
 }

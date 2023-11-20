@@ -24,23 +24,24 @@ export class PapersService {
   // wait for storage service to be ready
   private async waiting() {
     while (!this.#storageSvc.ready()) {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 50))
     }
-    this.#waiting = false
 
-    await this.load()
+    this.#waiting = false
+    this.load()
   }
 
-  async load() {
+  load() {
     if (this.#waiting) return
 
-    const papers = await this.#storageSvc.query<Paper>(OutcomeEntity.papers, `SELECT * FROM papers FETCH answers`)
-    const resources = await this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`)
+    this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`).then(resources => {
+      this.#storageSvc.query<Paper>(OutcomeEntity.papers, `SELECT * FROM papers FETCH answers`).then(papers => {
+        papers.forEach(paper => {
+          paper.resource = resources.find(resource => resource.id === paper.resource)
+        })
 
-    papers.forEach(paper => {
-      paper.resource = resources.find(r => r.id == paper.resource)
+        this.#papers.set(papers || [])
+      })
     })
-
-    this.#papers.set(papers || [])
   }
 }
