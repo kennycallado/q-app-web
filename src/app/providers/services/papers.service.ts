@@ -24,7 +24,7 @@ export class PapersService {
   // wait for storage service to be ready
   private async waiting() {
     while (!this.#storageSvc.ready()) {
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setTimeout(resolve, 300))
     }
 
     this.#waiting = false
