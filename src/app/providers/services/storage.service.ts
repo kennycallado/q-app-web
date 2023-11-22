@@ -13,7 +13,7 @@ export class StorageService {
   #inner_db = new Surreal();
 
   #ready = signal(false);
-  ready  = computed(() => this.#ready());
+  ready = computed(() => this.#ready());
 
   constructor() {
     (async () => {
@@ -51,7 +51,7 @@ export class StorageService {
     }
   }
 
-  async set<T>(key: ContentEntity | OutcomeEntity , content: any): Promise<Array<T>> {
+  async set<T>(key: ContentEntity | OutcomeEntity, content: any): Promise<T> {
     let db = this.selectDb(key);
 
     try {
@@ -59,15 +59,15 @@ export class StorageService {
       return await this.#inner_db.create(key, content);
     } catch (e) {
       if (e.includes('already exists')) {
-        return this.update(key, content);
+        return this.update<T>(key, content);
       } else {
         console.error(e);
-        return [];
+        return;
       }
     }
   }
 
-  async update<T>(key: ContentEntity | OutcomeEntity, content: T): Promise<Array<T>> {
+  async update<T>(key: ContentEntity | OutcomeEntity, content: T): Promise<T> {
     let db = this.selectDb(key);
 
     try {
@@ -75,7 +75,7 @@ export class StorageService {
       return await this.#inner_db.update(key, content);
     } catch (e) {
       console.error(e);
-      return [];
+      return;
     }
   }
 

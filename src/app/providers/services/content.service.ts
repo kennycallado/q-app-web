@@ -1,4 +1,4 @@
-import { Injectable, inject, isDevMode } from '@angular/core';
+import { Injectable, Injector, computed, effect, inject, isDevMode, signal } from '@angular/core';
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
@@ -23,31 +23,41 @@ export enum ContentEntity {
   providedIn: 'root'
 })
 export class ContentService {
-  #storageSvc   = inject(StorageService)
-  #papersSvc    = inject(PapersService)
+  #storageSvc = inject(StorageService)
+  #injector = inject(Injector) // very important to avoid circular dependencies
 
   #outer_db = new SurrealJS()
   // #db_url = !isDevMode() ? OUTER_DB : "ws://localhost:8080"
   #db_url = "ws://localhost:8080"
 
-  constructor() {
-    (async () => {
-      await this.#outer_db.connect(this.#db_url)
-      await this.#outer_db.signin({ username: 'viewer', password: 'viewer', namespace: 'test' })
+  #ready = signal(false)
+  ready = computed(() => this.#ready())
 
-      await this.sync_locales()
+  #update = effect(async () => {
+    if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
+      await this.#outer_db.connect(this.#db_url, undefined)
+      await this.#outer_db.use({ namespace: 'test', database: 'content' })
 
-      await this.live_media()
-      await this.live_questions()
-      await this.live_slides()
-      await this.live_resources()
-    })()
+      await this.#auth()
+
+      await this.#sync_locales()
+
+      await this.#live_media()
+      await this.#live_questions()
+      await this.#live_slides()
+      await this.#live_resources()
+
+      this.#ready.set(true)
+    }
+  })
+
+  async #auth() {
+    await this.#outer_db.signin({ username: 'viewer', password: 'viewer', namespace: 'test' })
   }
 
-  async sync_locales() {
-    await this.#outer_db.use({ namespace: 'test', database: 'content' })
-
+  async #sync_locales() {
     let coming_locales = await this.#outer_db.select(ContentEntity.locales);
+
     for (let result of coming_locales) {
       await this.#storageSvc.query(ContentEntity.locales,
         `UPDATE ${result.id} CONTENT {
@@ -56,9 +66,7 @@ export class ContentService {
     }
   }
 
-  private async live_media() {
-    await this.#outer_db.use({ namespace: 'test', database: 'content' })
-
+  async #live_media() {
     // get both media
     let coming_media = await this.#outer_db.select(ContentEntity.media);
     let local_media = await this.#storageSvc.get<Media>(ContentEntity.media);
@@ -82,7 +90,9 @@ export class ContentService {
 
     // live
     await this.#outer_db.live('media',
-      async ({action, result}) => {
+      async ({ action, result }) => {
+        const papersSvc = this.#injector.get(PapersService)
+
         switch (action) {
           case 'CLOSE': return;
           case 'DELETE':
@@ -103,12 +113,12 @@ export class ContentService {
           default:
             console.log('unknown action', action)
         }
+
+        papersSvc.load()
       })
   }
 
-  private async live_questions() {
-    await this.#outer_db.use({ namespace: 'test', database: 'content' })
-
+  async #live_questions() {
     // get both questions
     let coming_questions = await this.#outer_db.select(ContentEntity.questions);
     let local_questions = await this.#storageSvc.get<Question>(ContentEntity.questions);
@@ -132,7 +142,9 @@ export class ContentService {
 
     // live
     await this.#outer_db.live('questions',
-      async ({action, result}) => {
+      async ({ action, result }) => {
+        const papersSvc = this.#injector.get(PapersService)
+
         switch (action) {
           case 'CLOSE': return;
           case 'DELETE':
@@ -153,12 +165,12 @@ export class ContentService {
           default:
             console.log('unknown action', action)
         }
-      });
+
+        papersSvc.load()
+      })
   }
 
-  private async live_slides() {
-    await this.#outer_db.use({ namespace: 'test', database: 'content' })
-
+  async #live_slides() {
     // get both slides
     let coming_slides = await this.#outer_db.select(ContentEntity.slides);
     let local_slides = await this.#storageSvc.get<Slide>(ContentEntity.slides);
@@ -184,7 +196,9 @@ export class ContentService {
 
     // live
     await this.#outer_db.live('slides',
-      async ({action, result}) => {
+      async ({ action, result }) => {
+        const papersSvc = this.#injector.get(PapersService)
+
         switch (action) {
           case 'CLOSE': return;
           case 'DELETE':
@@ -207,12 +221,12 @@ export class ContentService {
           default:
             console.log('unknown action', action)
         }
-      });
+
+        papersSvc.load()
+      })
   }
 
-  private async live_resources() {
-    await this.#outer_db.use({ namespace: 'test', database: 'content' })
-
+  async #live_resources() {
     // get both resources
     let coming_resources = await this.#outer_db.select(ContentEntity.resources);
     let local_resources = await this.#storageSvc.get<Resource>(ContentEntity.resources);
@@ -240,16 +254,14 @@ export class ContentService {
 
     // live
     await this.#outer_db.live('resources',
-      async ({action, result}) => {
+      async ({ action, result }) => {
+        const papersSvc = this.#injector.get(PapersService)
+
         switch (action) {
           case 'CLOSE': return;
           case 'DELETE':
 
             await this.#storageSvc.query(ContentEntity.resources, `DELETE ${result}`)
-
-            // reload resources
-            // this.#resourcesSvc.load()
-            this.#papersSvc.load()
 
             break;
           case 'CREATE':
@@ -266,14 +278,12 @@ export class ContentService {
                 slides: ${JSON.stringify(result.slides)},
               }`)
 
-            // reload resources
-            // this.#resourcesSvc.load()
-            this.#papersSvc.load()
-
             break;
           default:
             console.log('unknown action', action)
         }
-      });
+
+        papersSvc.load()
+      })
   }
 }

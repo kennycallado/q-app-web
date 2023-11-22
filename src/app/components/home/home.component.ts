@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 
-import { ContentEntity, ContentService } from '../../providers/services/content.service';
-import { OutcomeEntity, OutcomeService } from '../../providers/services/outcome.service';
+import { ContentEntity } from '../../providers/services/content.service';
+import { OutcomeEntity } from '../../providers/services/outcome.service';
 import { StorageService } from '../../providers/services/storage.service';
 
 import { Question } from '../../providers/models/question.model';
@@ -19,9 +19,6 @@ import { Record as Score } from '../../providers/models/record.model';
 })
 export class HomeComponent {
   #storageSvc = inject(StorageService)
-
-  #outcomeSvc = inject(OutcomeService)
-  #contentSvc = inject(ContentService)
 
   async getEso(entity: string) {
     let result: Promise<Array<Question | Media | Resource | Slide>>;
@@ -70,7 +67,7 @@ export class HomeComponent {
 
 
   async blah() {
-    this.#outcomeSvc.live_papers()
+    // this.#outcomeSvc.live_papers()
   }
 
 }

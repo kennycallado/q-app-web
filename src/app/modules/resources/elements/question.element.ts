@@ -82,7 +82,7 @@ export class QuestionElement extends LitElement {
     const options = {
       bubbles: true,
       composed: true,
-      detail: { answer: this.answer }
+      detail: this.answer
     }
 
     this.dispatchEvent(new CustomEvent('change', options))

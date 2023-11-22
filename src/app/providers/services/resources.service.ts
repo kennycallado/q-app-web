@@ -25,7 +25,7 @@ export class ResourcesService {
     }
     this.#waiting = false
 
-    await this.load()
+    // await this.load()
   }
 
   async load() {

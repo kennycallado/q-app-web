@@ -1,47 +1,61 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { StorageService } from './storage.service';
-import { OutcomeEntity } from './outcome.service';
+import { OutcomeEntity, OutcomeService } from './outcome.service';
+import { ContentEntity, ContentService } from './content.service';
 
-import { Paper } from '../models/paper.model';
+import { Paper, PaperToPush, PaperWithResource } from '../models/paper.model';
 import { Resource } from '../models/resource.model';
-import { ContentEntity } from './content.service';
+import { Answer } from '../models/answer.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PapersService {
   #storageSvc = inject(StorageService)
+  #outcomeSvc = inject(OutcomeService)
+  #contentSvc = inject(ContentService)
 
-  #ready = false
-  #papers = signal([] as Paper[])
+  #papers = signal([] as PaperWithResource[])
   papers = computed(() => this.#papers())
 
-  constructor() {
-    (async () => await this.waiting())()
-  }
+  #update_on_storage_ready = effect(() => {
+    if (this.#storageSvc.ready()) this.load()
+  })
 
-  // wait for storage service to be ready
-  private async waiting() {
-    while (!this.#storageSvc.ready()) {
-      await new Promise(resolve => setTimeout(resolve, 300))
-    }
-
-    this.#ready = true
-    this.load()
-  }
+  #update_on_outers_ready = effect(() => {
+    if (this.#contentSvc.ready() && this.#outcomeSvc.ready()) this.load()
+  })
 
   load() {
-    if (!this.#ready) return
+    this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`)
+      .then(resources => {
+        this.#storageSvc.query<PaperWithResource>(OutcomeEntity.papers, `SELECT * FROM papers FETCH answers`)
+          .then(papers => {
+            papers.forEach((paper: Paper) => {
+              paper.resource = resources.find(resource => resource.id === paper.resource)
+            })
 
-    this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`).then(resources => {
-      this.#storageSvc.query<Paper>(OutcomeEntity.papers, `SELECT * FROM papers FETCH answers`).then(papers => {
-        papers.forEach(paper => {
-          paper.resource = resources.find(resource => resource.id === paper.resource)
-        })
-
-        this.#papers.set(papers || [])
+            this.#papers.set(papers || [])
+          })
       })
-    })
+  }
+
+  async update(paper: PaperWithResource) {
+    if (paper.answers.length) {
+      this.#storageSvc.query<Answer>(
+        OutcomeEntity.answers,
+        `INSERT INTO answers [${paper.answers.map(answer => JSON.stringify(answer)).join(',')}]`
+      ).then(async (res) => {
+        let paperToPush = { ...paper, answers: res.map(answer => answer.id), resource: paper.resource.id }
+
+        await this.#outcomeSvc.send_answers(res)
+        await this.#outcomeSvc.send_paper(paperToPush)
+      })
+    } else {
+      let paperToPush = new PaperToPush(paper.id, paper.user, paper.resource, paper.completed)
+
+      await this.#outcomeSvc.send_paper(paperToPush)
+    }
   }
 }

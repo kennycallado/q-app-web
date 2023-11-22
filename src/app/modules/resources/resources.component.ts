@@ -1,8 +1,9 @@
-import { Component, Signal, WritableSignal, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { PapersService } from '../../providers/services/papers.service';
 
-import { Resource } from '../../providers/models/resource.model';
+// import { OutcomeService } from '../../providers/services/outcome.service';
+// import { ContentService } from '../../providers/services/content.service';
 
 @Component({
   selector: 'app-resources',
@@ -10,7 +11,16 @@ import { Resource } from '../../providers/models/resource.model';
   styleUrl: './resources.component.sass'
 })
 export class ResourcesComponent {
-  #papersSvc    = inject(PapersService)
+  #papersSvc = inject(PapersService)
 
   papers = this.#papersSvc.papers
+
+  // <!-- maybe a popup that is syncing -->
+
+  // #outer_db_ready = signal(false)
+  // outer_db_ready = computed(() => this.#outer_db_ready())
+
+  // #outer_db_update = effect(() => {
+  //   if (this.#outcomeSvc.ready() && this.#contentSvc.ready()) this.#outer_db_ready.set(true)
+  // }, { allowSignalWrites: true})
 }

@@ -3,7 +3,17 @@
     <h3>Resources</h3>
   </div>
 
+
   <ul class="list-group list-group-flush">
+
+    <!-- maybe a popup that is syncing -->
+    @if (papers().length == 0) {
+    <li class="list-group-item d-flex">
+      <span class="mt-auto">🔄</span>
+      <span class="mt-auto ms-auto">Syncing...</span>
+    </li>
+    }
+
     @for (paper of papers(); track paper.id) {
     <li class="list-group-item d-flex">
       @if (paper.completed) { <span class="mt-auto">✅</span> }
@@ -14,33 +24,9 @@
       </a>
 
       <span class="mt-auto ms-auto text-success">{{ $any(paper.resource).type }}</span>
-
-      <!-- maybe form use different route -->
-      <!--
-      @switch ($any(paper.resource).type) {
-        @case ("module") {
-        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
-          <span class="lead">{{ $any(paper.resource).title }}</span>
-        </a>
-        }
-        @case ("slides") {
-        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
-          <span class="lead">{{ $any(paper.resource).title }}</span>
-        </a>
-        }
-        @case ("form") {
-        <a class="nav-link mx-2 text-truncate" [routerLink]="['slider', paper.id]">
-          <span class="lead">{{ $any(paper.resource).title }}</span>
-        </a>
-        }
-        @default {
-          <p>unmanaged</p>
-        }
-      }
-      -->
-
     </li>
     }
+
   </ul>
 
 </div>

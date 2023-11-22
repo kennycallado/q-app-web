@@ -1,14 +1,15 @@
 import { SwiperContainer, register } from 'swiper/element'
 
-import { Component, ElementRef, Signal, ViewChild, WritableSignal, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, WritableSignal, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 import { PapersService } from '../../../../providers/services/papers.service';
 
 import { ResourceType } from '../../../../providers/models/resource.model';
-import { PaperPush } from '../../../../providers/models/paper.model';
+import { PaperWithResource } from '../../../../providers/models/paper.model';
 import { Answer } from '../../../../providers/models/answer.model';
 import { Slide } from '../../../../providers/models/slide.model';
+import { Question } from '../../../../providers/models/question.model';
 
 @Component({
   selector: 'app-slider',
@@ -22,7 +23,7 @@ export class SliderComponent {
 
   @ViewChild('swiper') swiper: ElementRef<SwiperContainer>;
 
-  paper: WritableSignal<PaperPush>;
+  ready          = false;
 
   allowSlideNext = true;
   allowSlidePrev = true;
@@ -32,40 +33,20 @@ export class SliderComponent {
 
   locale = 'es';
 
-  change_answer(new_answer: CustomEvent<Answer>) {
-    this.paper.update((paper) => {
-      const answers = paper.answers;
-      const answer = answers.find((answer) => answer.question === new_answer.detail.question)
+  paper: WritableSignal<PaperWithResource>;
+  p_ready = effect(() => {
+    if (this.ready) return
+    if (this.#papersSvc.papers() !== undefined && this.#papersSvc.papers().length > 0) {
+      this.#route.paramMap.subscribe((params: ParamMap) => {
+        const paper_id = params.get('paper_id')
 
-      if (answer) {
-        answer.answer = new_answer.detail.answer
-        answers.push(answer)
-      } else {
-        answers.push(new_answer.detail)
-      }
+        const paper = this.#papersSvc.papers().find(paper => paper.id === paper_id)
+        this.paper = signal(paper)
 
-      paper.answers = answers
-
-      return paper
-    })
-
-    // this.paper.update((paper) => {
-    //   const answers = paper.answers;
-    //   const answer = answers.find((answer) => answer.question === new_answer.detail.question)
-
-    //   if (answer) {
-    //     answer.answer = new_answer.detail.answer
-    //   } else {
-    //     paper.answers.push(new_answer.detail)
-    //   }
-
-    //   paper.answers = answers
-
-    //   return paper
-    // })
-
-    if (this.check_completed()) this.completed = true
-  }
+        if (this.paper()) this.ready = true
+      })
+    }
+  })
 
   get_answer(question_id: string): Answer | undefined {
     if (this.paper().answers.length === 0) return undefined
@@ -73,24 +54,35 @@ export class SliderComponent {
     return this.paper().answers.find((answer) => answer.question === question_id)
   }
 
-  // Slide[] | Question[]
-  get_content(type: ResourceType): any {
+  get_content(type: ResourceType): Slide[] | Question[] {
     return this.paper().resource[type]
   }
 
-  submit() {
-    if (!this.check_completed()) return
+  change_answer(new_answer: CustomEvent<Answer>): void {
+    this.paper.update((paper) => {
+      let index = paper.answers.findIndex((answer) => answer.question === new_answer.detail.question)
 
-    // enviar al service:
-    // save answers locally
-    // send answers to server
-    // complete the paper with the answers
-    // send the paper to the server
+      if (index === -1) {
+        paper.answers = [...paper.answers, new_answer.detail]
+      } else {
+        paper.answers[index] = new_answer.detail
+      }
 
-    this.#router.navigate(['resources'])
+      return paper
+    })
+
+    this.completed = this.check_completed()
   }
 
-  check_completed() {
+  reachEnd(): void {
+    // not sure why
+    if (!this.swiper) return
+    this.completed = this.check_completed()
+
+    this.reachedEnd = true;
+  }
+
+  private check_completed(): boolean {
     if (this.paper().resource.type === 'module') return true
 
     if (this.paper().resource.type === 'slides') {
@@ -101,6 +93,7 @@ export class SliderComponent {
       }
 
       if (this.paper().answers.length === n_questions) return true
+      return false
     }
 
     if (this.paper().resource.type === 'form') {
@@ -110,40 +103,37 @@ export class SliderComponent {
     return false
   }
 
-  reachEnd() {
-    // some times this method is called before the paper is loaded
-    if (typeof this.paper !== "function") return ;
-    console.log('reached end')
-    if (this.check_completed()) this.completed = true
-
-    this.reachedEnd = true;
-  }
-
-  next() {
+  next(): void {
     this.swiper.nativeElement.swiper.slideNext()
   }
 
-  prev() {
+  prev(): void {
     this.swiper.nativeElement.swiper.slidePrev()
   }
 
-  // lifecycle hooks
-  ngOnInit() {
-    this.#route.paramMap.subscribe((params: ParamMap) => {
-      const paper_id = params.get('paper_id')
+  submit(): void {
+    if (!this.check_completed()) return
 
-      this.paper = signal(
-        this.#papersSvc
-          .papers()
-          .find(paper => paper.id === paper_id) as PaperPush)
-    })
+    this.#papersSvc.update(this.paper())
+
+    // enviar al service:
+    // save answers locally
+    // send answers to server
+    // complete the paper with the answers
+    // send the paper to the server
+
+    this.#router.navigate(['resources'])
   }
 
-  ngAfterViewInit() {
+
+  // lifecycle hooks
+  ngOnInit(): void { }
+
+  ngAfterViewInit(): void {
     register()
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.reachedEnd = false;
     this.completed  = false;
     this.paper.set(undefined)
