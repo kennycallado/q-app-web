@@ -2,20 +2,14 @@ import { Injectable, Injector, computed, effect, inject, isDevMode, signal } fro
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
-import { OUTER_DB } from '../constants';
-import { StorageService } from './storage.service';
-import { PapersService } from './papers.service';
+import { OUTER_DB } from '../../constants';
+import { StorageService } from '../storage.service';
+import { PapersService } from '../papers.service';
 
-import { Paper, PaperToPush } from '../models/paper.model';
-import { Record as Score } from '../models/record.model';
-import { Answer } from '../models/answer.model';
-
-export enum OutcomeEntity {
-  answers = 'answers',
-  papers = 'papers',
-  records = 'records',
-  scripts = 'scripts',
-}
+import { OutcomeEntity } from '../../types';
+import { Paper, PaperToPush } from '../../models/paper.model';
+import { Record as Score } from '../../models/record.model';
+import { Answer } from '../../models/answer.model';
 
 @Injectable({
   providedIn: 'root'
@@ -25,8 +19,8 @@ export class OutcomeService {
   #injector = inject(Injector) // very important to avoid circular dependencies
 
   #outer_db = new SurrealJS()
-  // #db_url = !isDevMode() ? OUTER_DB : "ws://localhost:8080"
-  #db_url = "ws://localhost:8080"
+  // #db_url = !isDevMode() ? OUTER_DB : "http://localhost:8000"
+  #db_url = "http://localhost:8000"
 
   #ready = signal(false)
   ready = computed(() => this.#ready())
@@ -34,13 +28,13 @@ export class OutcomeService {
   #update = effect(async () => {
     if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
       await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.use({ namespace: 'test', database: 'outcome' })
+      await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
 
       await this.#auth()
 
       await this.#live_answers()
       await this.#live_papers()
-      await this.#live_scores()
+      // await this.#live_scores()
 
       this.#ready.set(true)
     }
@@ -50,12 +44,21 @@ export class OutcomeService {
     return await this.#outer_db.query(`INSERT INTO answers [${answers.map((answer: any) => JSON.stringify(answer)).join(',')}]`)
   }
 
-  async send_paper(paper: PaperToPush): Promise<any> {
-    return await this.#outer_db.update(paper.id, { ...paper })
+  // async send_paper(paper: PaperToPush): Promise<any> {
+  async send_paper(paper: PaperToPush) {
+    // console.log('sending paper', paper)
+    // if (paper.answers.length === 0) {
+    //   await this.#outer_db.update(paper.id, { ...paper })
+
+    //   return await this.#outer_db.query_raw(`fn::on_push($paper)`, { paper: JSON.stringify(paper) })
+    // } else {
+      await this.#outer_db.update(paper.id, { ...paper })
+      await this.#outer_db.query_raw(`LET $paper = (SELECT * FROM ${paper.id})[0]; fn::on_push($paper)`)
+    // }
   }
 
   async #auth() {
-    await this.#outer_db.signin({ username: 'root', password: 'root', namespace: 'test' })
+    await this.#outer_db.signin({ username: 'root', password: 'root' })
     // await this.#outer_db.signin({ username: 'viewer', password: 'viewer', namespace: 'test' })
   }
 
@@ -151,9 +154,9 @@ export class OutcomeService {
             await this.#storageSvc.query(OutcomeEntity.records,
               `UPDATE ${result.id} CONTENT {
                 user: ${result.user},
-                record: ${result.record},
                 created: ${JSON.stringify(result.created)},
               };`)
+                // record: ${result.record},
 
             break;
           default:
@@ -187,6 +190,7 @@ export class OutcomeService {
           user: ${paper.user},
           completed: ${paper.completed},
           answers: ${JSON.stringify(paper.answers)},
+          created: ${JSON.stringify(paper.created)},
         }`)
     }
 
@@ -199,6 +203,7 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
+            // creo que result.id
             await this.#storageSvc.query(OutcomeEntity.papers, `DELETE ${result}`)
             break;
           case 'CREATE':
@@ -210,6 +215,7 @@ export class OutcomeService {
                 user: ${result.user},
                 completed: ${result.completed},
                 answers: ${JSON.stringify(result.answers)},
+                created: ${JSON.stringify(result.created)},
               }`)
 
             break;
@@ -218,6 +224,6 @@ export class OutcomeService {
         }
 
         papersSvc.load()
-      });
+      }, false);
   }
 }

@@ -1,8 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
-import { ContentEntity } from './content.service';
 import { StorageService } from './storage.service';
 
+import { ContentEntity } from '../types';
 import { Resource } from '../models/resource.model';
 
 @Injectable({

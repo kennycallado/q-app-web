@@ -1,9 +1,10 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { StorageService } from './storage.service';
-import { OutcomeEntity, OutcomeService } from './outcome.service';
-import { ContentEntity, ContentService } from './content.service';
+import { OutcomeService } from './api/outcome.service';
+import { ContentService } from './api/content.service';
 
+import { ContentEntity, OutcomeEntity } from '../types';
 import { Paper, PaperToPush, PaperWithResource } from '../models/paper.model';
 import { Resource } from '../models/resource.model';
 import { Answer } from '../models/answer.model';
@@ -53,7 +54,7 @@ export class PapersService {
         await this.#outcomeSvc.send_paper(paperToPush)
       })
     } else {
-      let paperToPush = new PaperToPush(paper.id, paper.user, paper.resource, paper.completed)
+      let paperToPush = new PaperToPush(paper.id, paper.user, paper.resource, paper.completed, paper.created, paper.answers)
 
       await this.#outcomeSvc.send_paper(paperToPush)
     }

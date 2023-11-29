@@ -2,22 +2,15 @@ import { Injectable, Injector, computed, effect, inject, isDevMode, signal } fro
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
-import { OUTER_DB } from '../constants';
-import { StorageService } from './storage.service';
-import { PapersService } from './papers.service';
+import { OUTER_DB } from '../../constants';
+import { StorageService } from '../storage.service';
+import { PapersService } from '../papers.service';
 
-import { Media } from '../models/media.model';
-import { Question } from '../models/question.model';
-import { Slide } from '../models/slide.model';
-import { Resource } from '../models/resource.model';
-
-export enum ContentEntity {
-  locales = 'locales',
-  media = 'media',
-  questions = 'questions',
-  resources = 'resources',
-  slides = 'slides',
-}
+import { ContentEntity } from '../../types';
+import { Media } from '../../models/media.model';
+import { Question } from '../../models/question.model';
+import { Slide } from '../../models/slide.model';
+import { Resource } from '../../models/resource.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +20,8 @@ export class ContentService {
   #injector = inject(Injector) // very important to avoid circular dependencies
 
   #outer_db = new SurrealJS()
-  // #db_url = !isDevMode() ? OUTER_DB : "ws://localhost:8080"
-  #db_url = "ws://localhost:8080"
+  // #db_url = !isDevMode() ? OUTER_DB : "http://localhost:8000"
+  #db_url = "http://localhost:8000"
 
   #ready = signal(false)
   ready = computed(() => this.#ready())
@@ -36,7 +29,7 @@ export class ContentService {
   #update = effect(async () => {
     if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
       await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.use({ namespace: 'test', database: 'content' })
+      await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
 
       await this.#auth()
 
@@ -52,7 +45,7 @@ export class ContentService {
   })
 
   async #auth() {
-    await this.#outer_db.signin({ username: 'viewer', password: 'viewer', namespace: 'test' })
+    await this.#outer_db.signin({ username: 'root', password: 'root' })
   }
 
   async #sync_locales() {
