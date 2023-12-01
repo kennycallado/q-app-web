@@ -2,6 +2,9 @@
 
 ## NOTES:
 
+- [ ] scores: change records for scores
+- [ ] db: there is a problem in surreal with live querys
+
 ### LIVE SELECT
 until it's implemented into wasm I'll use the js sdk
 
