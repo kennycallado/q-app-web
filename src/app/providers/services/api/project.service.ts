@@ -1,4 +1,5 @@
 import { Injectable, Injector, computed, effect, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
@@ -12,10 +13,10 @@ import { ProjectEntity } from '../../types';
 export class ProjectService {
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector)
+  #document   = inject(DOCUMENT)
 
   #outer_db = new SurrealJS()
-  // #db_url = !isDevMode() ? OUTER_DB : "http://localhost:8000"
-  #db_url = "http://localhost:8000"
+  #db_url = this.#document.location.hostname === 'localhost' ? "http://localhost:8000" : OUTER_DB
 
   #ready = signal(false)
   ready = computed(() => this.#ready())
