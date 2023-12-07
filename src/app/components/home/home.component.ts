@@ -10,7 +10,7 @@ import { Resource } from '../../providers/models/resource.model';
 import { Slide } from '../../providers/models/slide.model';
 import { Answer } from '../../providers/models/answer.model';
 import { Paper } from '../../providers/models/paper.model';
-import { Record as Score } from '../../providers/models/record.model';
+import { Score } from '../../providers/models/score.model';
 
 @Component({
   selector: 'app-home',
@@ -32,18 +32,19 @@ export class HomeComponent {
     let result: Promise<Array<Question | Media | Resource | Slide>>;
 
     switch (entity) {
-      case 'questions':
+      case ContentEntity.questions:
         result = this.#storageSvc.get<Question>(ContentEntity.questions)
         break;
-      case 'media':
+      case ContentEntity.media:
         result = this.#storageSvc.get<Media>(ContentEntity.media)
         break;
-      case 'resources':
+      case ContentEntity.resources:
         result = this.#storageSvc.get<Resource>(ContentEntity.resources)
         break;
-      case 'slides':
+      case ContentEntity.slides:
         result = this.#storageSvc.get<Slide>(ContentEntity.slides)
         break;
+
       default:
         console.log('entity not defined')
         break;
@@ -56,15 +57,16 @@ export class HomeComponent {
     let result: Promise<Array<Answer | Paper | Score>>
 
     switch (entity) {
-      case 'answers':
+      case OutcomeEntity.answers:
         result = this.#storageSvc.get<Answer>(OutcomeEntity.answers)
         break;
-      case 'papers':
+      case OutcomeEntity.papers:
         result = this.#storageSvc.get<Paper>(OutcomeEntity.papers)
         break;
-      case 'records':
-        result = this.#storageSvc.get<Score>(OutcomeEntity.records)
+      case OutcomeEntity.scores:
+        result = this.#storageSvc.get<Score>(OutcomeEntity.scores)
         break;
+
       default:
         console.log('entity not defined')
         break;

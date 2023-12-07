@@ -1,19 +1,19 @@
 export enum ContentEntity {
-  locales = 'locales',
-  media = 'media',
+  locales   = 'locales',
+  media     = 'media',
   questions = 'questions',
   resources = 'resources',
-  slides = 'slides',
+  slides    = 'slides',
 }
 
 export enum OutcomeEntity {
   answers = 'answers',
-  papers = 'papers',
-  records = 'records',
+  papers  = 'papers',
+  scores  = 'scores',
   scripts = 'scripts',
 }
 
 export enum ProjectEntity {
   projects = 'projects',
-  users = 'users',
+  users    = 'users',
 }

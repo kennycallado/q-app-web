@@ -1,6 +1,6 @@
-export class Record {
+export class Score {
   id: string;
   user: string; // user id
-  record: Object;
+  score: Object;
   created: Date;
 }

@@ -1,16 +1,16 @@
-import { Injectable, Injector, computed, effect, inject, isDevMode, signal } from '@angular/core';
+import { Injectable, Injector, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
-import { OUTER_DB } from '../../constants';
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
 
+import { OUTER_DB } from '../../constants';
 import { OutcomeEntity } from '../../types';
-import { Paper, PaperToPush } from '../../models/paper.model';
-import { Record as Score } from '../../models/record.model';
 import { Answer } from '../../models/answer.model';
+import { Paper, PaperToPush } from '../../models/paper.model';
+import { Score } from '../../models/score.model';
 
 @Injectable({
   providedIn: 'root'
@@ -35,7 +35,7 @@ export class OutcomeService {
 
       await this.#live_answers()
       await this.#live_papers()
-      // await this.#live_scores()
+      await this.#live_scores()
 
       this.#ready.set(true)
     }
@@ -118,28 +118,28 @@ export class OutcomeService {
 
   async #live_scores() {
     // get both scores
-    let coming_score = await this.#outer_db.select(OutcomeEntity.records);
-    let local_score = await this.#storageSvc.get<Score>(OutcomeEntity.records);
+    let coming_score = await this.#outer_db.select(OutcomeEntity.scores);
+    let local_score = await this.#storageSvc.get<Score>(OutcomeEntity.scores);
 
     // detect deletes
     for (let score of local_score) {
       if (!coming_score.find(r => r.id === score.id)) {
-        await this.#storageSvc.query(OutcomeEntity.records, `DELETE ${score.id}`);
+        await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${score.id}`);
       }
     }
 
     // detect updates
     for (let score of coming_score) {
-      await this.#storageSvc.query(OutcomeEntity.records,
+      await this.#storageSvc.query(OutcomeEntity.scores,
         `UPDATE ${score.id} CONTENT {
           user: ${score.user},
-          record: ${score.record},
+          score: ${JSON.stringify(score.score)},
           created: ${JSON.stringify(score.created)},
         }`)
     }
 
     // live
-    await this.#outer_db.live('records',
+    await this.#outer_db.live('scores',
       async ({ action, result }) => {
         const papersSvc = this.#injector.get(PapersService)
 
@@ -147,17 +147,17 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(OutcomeEntity.records, `DELETE ${result}`)
+            await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${result}`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query(OutcomeEntity.records,
+            await this.#storageSvc.query(OutcomeEntity.scores,
               `UPDATE ${result.id} CONTENT {
                 user: ${result.user},
+                score: ${JSON.stringify(result.score)},
                 created: ${JSON.stringify(result.created)},
               };`)
-                // record: ${result.record},
 
             break;
           default:

@@ -2,7 +2,8 @@
 
 ## NOTES:
 
-- [ ] scores: change records for scores
+- [ ] youtube: change `@angular/youtube-player` for `@justinribeiro/lite-youtube`
+- [X] scores: change records for scores
 - [ ] db: there is a problem in surreal with live querys
 
 ### LIVE SELECT
