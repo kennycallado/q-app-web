@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import { Content, Question } from '../../../providers/models/question.model';
+import { Question } from '../../../providers/models/question.model';
 import { Answer } from '../../../providers/models/answer.model';
 
 @customElement('question-element')
@@ -49,12 +49,16 @@ export class QuestionElement extends LitElement {
   //   this.spell(this.answer.answer)
   // }
 
-  spell(answer: number) {
+  spell(answer: string) {
+    let question = this.question.question.find((content) => content.locale === this.locale)
+    this.spellAnswer = question.spelled[parseInt(answer) - 1] // start at 0 but min is 1
   }
 
   changes(event: HTMLInputElement) {
-    this.answer.answer = event.value.toString()
-    this.spell(this.answer.answer)
+    this.answer.answer = event.value
+
+    // maybe only for range
+    this.spell(event.value)
 
     const options = {
       bubbles: true,
@@ -70,21 +74,21 @@ export class QuestionElement extends LitElement {
     if (this.question.type !== 'range') return ''
     if (this.question[this.question.type].value) return this.question[this.question.type].value.toString()
 
-    return '-1'
+    return '0'
   }
 
   get_min(): string {
     if (this.question.type !== 'range') return ''
     if (this.question[this.question.type].min) return this.question[this.question.type].min.toString()
 
-    return '0'
+    return '1'
   }
 
   get_max(): string {
     if (this.question.type !== 'range') return ''
     if (this.question[this.question.type].max) return this.question[this.question.type].max.toString()
 
-    return '6'
+    return '7'
   }
 
   // Render the UI as a function of component state

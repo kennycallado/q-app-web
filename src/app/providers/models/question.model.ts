@@ -22,4 +22,5 @@ export type RangeQuestion = {
 export type Content = {
   locale: string;
   content: string;
+  spelled?: string[];
 }
