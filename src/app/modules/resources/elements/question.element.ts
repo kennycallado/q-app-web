@@ -49,30 +49,7 @@ export class QuestionElement extends LitElement {
   //   this.spell(this.answer.answer)
   // }
 
-  spell(answer: string) {
-    switch (answer) {
-      case '0':
-        this.spellAnswer = 'N/C';
-        break;
-      case '1':
-        this.spellAnswer = 'Nada';
-        break;
-      case '2':
-        this.spellAnswer = 'Poco';
-        break;
-      case '3':
-        this.spellAnswer = 'Medio';
-        break;
-      case '4':
-        this.spellAnswer = 'Bastante';
-        break;
-      case '5':
-        this.spellAnswer = 'Mucho';
-        break;
-      case '6':
-        this.spellAnswer = 'Totalmente';
-        break;
-    }
+  spell(answer: number) {
   }
 
   changes(event: HTMLInputElement) {

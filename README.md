@@ -2,6 +2,7 @@
 
 ## NOTES:
 
+- [ ] live: I think when DELETE it's returning the object or is the blob
 - [ ] youtube: change `@angular/youtube-player` for `@justinribeiro/lite-youtube`
 - [X] scores: change records for scores
 - [ ] db: there is a problem in surreal with live querys
