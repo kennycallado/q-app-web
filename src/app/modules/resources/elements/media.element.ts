@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import { Media } from '../../../providers/models/media.model';
+import '@justinribeiro/lite-youtube';
 
 const DEFAULT_PICTURE_URL = 'https://picsum.photos/200/300';
 
@@ -8,13 +9,15 @@ const DEFAULT_PICTURE_URL = 'https://picsum.photos/200/300';
 export class MediaElement extends LitElement {
   // Define scoped styles right with your component, in plain CSS
   static styles = css`
-    img, youtube-player {
-      border-radius: 10px;
-
+    img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }`;
+    }
+    lite-youtube {
+      width: 100%
+    }
+`;
 
   // Declare reactive properties
   @property()
@@ -35,6 +38,9 @@ export class MediaElement extends LitElement {
   render() {
     const alt = () => { return this.media?.alt ? this.media.alt : '' };
 
-    return html`<img src='${this.getLinkPicture()}' alt="${alt()}" /> `;
+    return (this.media && this.media.type === 'video')
+      ? html`<lite-youtube videoid="FoMlSB6ftQg" alt="${alt()}" params="controls=0"></lite-youtube>`
+      : html`<img src='${this.getLinkPicture()}' alt="${alt()}" /> `;
+    // return html`<img src='${this.getLinkPicture()}' alt="${alt()}" /> `;
   }
 }

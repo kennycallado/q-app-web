@@ -1,6 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { YouTubePlayerModule } from '@angular/youtube-player';
 
 import { ResourcesRoutingModule } from './resources-routing.module';
 
@@ -21,7 +20,6 @@ import { MediaComponent } from './components/media/media.component';
   imports: [
     CommonModule,
     RouterModule,
-    YouTubePlayerModule,
     ResourcesRoutingModule
   ],
   providers: [
