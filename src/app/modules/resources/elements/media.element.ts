@@ -1,13 +1,18 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import { Media } from '../../../providers/models/media.model';
+
 import '@justinribeiro/lite-youtube';
 
-const DEFAULT_PICTURE_URL = 'https://picsum.photos/200/300';
+import { DEFAULT_PICTURE_URL } from '../../../providers/constants';
+import { Media } from '../../../providers/models/media.model';
 
 @customElement('media-element')
 export class MediaElement extends LitElement {
-  // Define scoped styles right with your component, in plain CSS
+  @property({ type: Object }) media?: Media;
+
+  private timeStamp: number = Date.now();
+  private default_picture: string = DEFAULT_PICTURE_URL;
+
   static styles = css`
     img {
       width: 100%;
@@ -17,30 +22,15 @@ export class MediaElement extends LitElement {
     lite-youtube {
       width: 100%
     }
-`;
+  `;
 
-  // Declare reactive properties
-  @property()
-  media?: Media;
-
-  timeStamp: number = Date.now();
-  default_picture: string = DEFAULT_PICTURE_URL;
-
-  getLinkPicture(): string {
-    if (this.media && this.media.type === 'image') {
-      return this.media.url;
-    }
-
-    return this.default_picture + '?' + this.timeStamp;
+  get linkPicture(): string {
+    return (this.media && this.media.type === 'image') ? this.media.url : `${this.default_picture}?${this.timeStamp}`;
   }
 
-  // Render the UI as a function of component state
   render() {
-    const alt = () => { return this.media?.alt ? this.media.alt : '' };
-
     return (this.media && this.media.type === 'video')
-      ? html`<lite-youtube videoid="FoMlSB6ftQg" alt="${alt()}" params="controls=0"></lite-youtube>`
-      : html`<img src='${this.getLinkPicture()}' alt="${alt()}" /> `;
-    // return html`<img src='${this.getLinkPicture()}' alt="${alt()}" /> `;
+      ? html`<lite-youtube videoid="FoMlSB6ftQg" alt="${this.media?.alt ?? ''}" params="controls=0"></lite-youtube>`
+      : html`<img src='${this.linkPicture}' alt="${this.media?.alt ?? ''}" /> `;
   }
 }

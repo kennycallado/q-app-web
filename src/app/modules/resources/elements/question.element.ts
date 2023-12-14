@@ -1,11 +1,17 @@
-import {LitElement, css, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
-
-import { Question } from '../../../providers/models/question.model';
-import { Answer } from '../../../providers/models/answer.model';
+import { LitElement, css, html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { Question } from '../../../providers/models/question.model'
+import { Answer } from '../../../providers/models/answer.model'
 
 @customElement('question-element')
 export class QuestionElement extends LitElement {
+  @property({ type: Object }) question: Question
+  @property({ type: Object }) answer: Answer
+  @property({ type: String }) locale?: string = 'en'
+  @property({ type: String }) private content: string
+
+  private spellAnswer: string
+
   static styles = css`
     p {
       margin-top: 0;
@@ -28,26 +34,13 @@ export class QuestionElement extends LitElement {
     }
   `;
 
-  // Declare reactive properties
-  @property()
-  question: Question;
+  constructor() {
+    super();
 
-  @property()
-  answer: Answer | undefined;
-
-  @property()
-  locale?: string = 'en';
-
-  @property()
-  private spellAnswer: string = '';
-
-  // connectedCallback(): void {
-  //   super.connectedCallback();
-
-  //   if (!this.answer) { this.answer = new Answer() }
-
-  //   this.spell(this.answer.answer)
-  // }
+    this.answer = new Answer()
+    this.spellAnswer = ''
+    this.content = ''
+  }
 
   spell(answer: string) {
     let question = this.question.question.find((content) => content.locale === this.locale)
@@ -91,23 +84,29 @@ export class QuestionElement extends LitElement {
     return '7'
   }
 
-  // Render the UI as a function of component state
+  updated(changedProperties) {
+    if (changedProperties.has('question')) {
+      this.answer.question = this.question.id;
+      this.updateContent();
+    }
+
+    if (changedProperties.has('locale')) {
+      this.updateContent();
+    }
+  }
+
+  updateContent() {
+    this.content = this.question.question.find((content) => content.locale === this.locale)?.content || this.question.question[0].content;
+  }
+
+  handleChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.changes(target);
+  }
+
   render() {
-    if (!this.answer) {
-      this.answer = new Answer()
-      this.answer.question = this.question.id
-    }
-
-    const content = () => {
-      let question: any;
-      question = this.question.question.find((content) => content.locale === this.locale).content
-      if (!question) question = this.question.question[0].content
-
-      return question
-    }
-
     return html`
-      <p>${content()} <span class="answer">${this.spellAnswer}</span></p>
+      <p>${this.content} <span class="answer">${this.spellAnswer}</span></p>
 
       <input
         @change="${(event: any) => this.changes(event.target)}"
@@ -116,7 +115,6 @@ export class QuestionElement extends LitElement {
         min="${this.get_min()}"
         max="${this.get_max()}"
       />
-
-      `;
+    `;
   }
 }
