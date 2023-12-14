@@ -125,17 +125,7 @@ export class SliderComponent {
     this.#router.navigate(['resources'])
   }
 
-
-  // lifecycle hooks
-  ngOnInit(): void { }
-
   ngAfterViewInit(): void {
     register()
-  }
-
-  ngOnDestroy(): void {
-    this.reachedEnd = false;
-    this.completed  = false;
-    this.paper.set(undefined)
   }
 }
