@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 import { ResourcesRoutingModule } from './resources-routing.module';
 
-import { QuestionElement } from './elements/question.element';
 import { SliderComponent } from './components/slider/slider.component';
 import { ResourcesComponent } from './resources.component';
 import { RouterModule } from '@angular/router';
@@ -24,7 +23,6 @@ import { QuestionComponent } from './components/question/question.component';
     ResourcesRoutingModule
   ],
   providers: [
-    QuestionElement
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
