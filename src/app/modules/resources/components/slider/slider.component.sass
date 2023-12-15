@@ -1,22 +1,11 @@
-img
-  border-radius: 10px
-
-  width: 100%
-  height: 100%
-  object-fit: cover
-
-// .card-body
-
-media-element
+app-media
   display: flex
   position: relative
+  overflow: hidden
 
   height: 300px
 
   border-radius: 10px
-  overflow: hidden
-
-  background-color: black
 
 .media-up
   position: relative
@@ -28,32 +17,7 @@ media-element
   width: 200px
 
   border-radius: 10px
-
-.media-up-gradient
-  /* bla */
-
-.media-up-gradient:after
-  content: ''
-
-  position: absolute
-  left: 0
-
-  width: 200px
-  height: 300px
-
-  border-radius: 10px
-
-  background-image: linear-gradient(147deg, rgba(0,212,255,0.5) 0%, rgba(2,0,36,0.5) 74%)
-  /* backdrop-filter: blur(4px); */
-
-.media-up-gradient:hover:after
-  content: none
-
-.media-up-gradient:hover
-  cursor: pointer
-  transform: scale(1.5) translateY(50px)
-  /* transition: all 1.5s ease; */
-  transition: all 1.5s ease
+  box-shadow: 0 0 10px 0 rgba(0,0,0,.5)
 
 .media-left
   position: relative
@@ -66,10 +30,33 @@ media-element
   height: 300px
 
   border-radius: 10px
-
   box-shadow: 0 0 10px 0 rgba(0,0,0,.5)
 
-.media-left-gradient
+// .media-up-gradient:after
+//   content: ''
+
+//   position: absolute
+//   left: 0
+
+//   width: 200px
+//   height: 300px
+
+//   border-radius: 10px
+
+//   background-image: linear-gradient(147deg, rgba(0,212,255,0.5) 0%, rgba(2,0,36,0.5) 74%)
+//   /* backdrop-filter: blur(4px); */
+
+// .media-up-gradient:hover:after
+//   content: none
+
+// .media-up-gradient:hover
+//   cursor: pointer
+//   transform: scale(1.5) translateY(50px)
+//   /* transition: all 1.5s ease; */
+//   transition: all 1.5s ease
+
+
+// .media-left-gradient
   /* position: relative; */
   /* margin-top: -50px; */
   /* margin-left: -30px; */
@@ -79,26 +66,25 @@ media-element
   /* border-radius: 10px; */
   /* box-shadow: 0 0 10px 0 rgba(0,0,0,.5); */
 
-.media-left-gradient:after
-  content: ''
+// .media-left-gradient:after
+//   content: ''
 
-  position: absolute
-  left: 0
+//   position: absolute
+//   left: 0
 
-  min-width: 200px
-  max-width: 250px
-  height: 300px
+//   min-width: 200px
+//   max-width: 250px
+//   height: 300px
 
-  border-radius: 10px
+//   border-radius: 10px
 
-  background-image: linear-gradient(147deg, rgba(0,212,255,0.5) 0%, rgba(2,0,36,0.5) 74%)
+//   background-image: linear-gradient(147deg, rgba(0,212,255,0.5) 0%, rgba(2,0,36,0.5) 74%)
 
+// .media-left-gradient:hover:after
+//   content: none
 
-.media-left-gradient:hover:after
-  content: none
-
-.media-left-gradient:hover
-  cursor: pointer
-  /* transform: translateX(10px); */
-  transform: scale(1.5) translateY(-10px) translateX(50px)
-  transition: all 1s ease
+// .media-left-gradient:hover
+//   cursor: pointer
+//   /* transform: translateX(10px); */
+//   transform: scale(1.5) translateY(-10px) translateX(50px)
+//   transition: all 1s ease

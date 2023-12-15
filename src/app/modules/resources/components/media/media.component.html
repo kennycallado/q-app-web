@@ -1,11 +1,10 @@
+@if(this.media && this.media.type === 'video') {
+<lite-youtube
+  alt="{{ media?.alt ?? '' }}"
+  videoid="FoMlSB6ftQg"
+  params="controls=0"></lite-youtube>
+} @else {
 <img
-  *ngIf="media.type === 'image'"
-  src="{{ media.url }}" />
-
-<youtube-player
-  *ngIf="media!.type === 'video'"
-  suggestedQuality="highres"
-  [height]="300"
-  [width]="200"
-  videoId="{{ media.url }}">
-</youtube-player>
+  src='{{ linkPicture }}'
+  alt="{{ media?.alt ?? '' }}" />
+}

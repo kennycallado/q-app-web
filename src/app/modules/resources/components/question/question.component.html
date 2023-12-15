@@ -1,0 +1,9 @@
+<p>{{ content() }} <span class="answer">{{ spelled() }}</span></p>
+
+<input
+  (change)="update($event.target)"
+  type="{{ question.type }}"
+  value="{{ get_value() }}"
+  min="{{ get_min() }}"
+  max="{{ get_max() }}"
+/>

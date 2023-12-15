@@ -1,6 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { Media, MediaType } from '../../../../providers/models/media.model';
+
+import '@justinribeiro/lite-youtube';
+
 import { DEFAULT_PICTURE_URL } from '../../../../providers/constants';
+import { Media } from '../../../../providers/models/media.model';
 
 @Component({
   selector: 'app-media',
@@ -10,30 +13,10 @@ import { DEFAULT_PICTURE_URL } from '../../../../providers/constants';
 export class MediaComponent {
   @Input() media?: Media;
 
-  timeStamp: number = Date.now();
-  default_picture: string = DEFAULT_PICTURE_URL;
+  private timeStamp: number = Date.now();
+  private default_picture: string = DEFAULT_PICTURE_URL;
 
-  getLinkPicture(): string {
-    if (this.media && this.media.type === 'image') {
-      return this.media.url;
-    }
-
-    return this.default_picture + '?' + this.timeStamp;
-  }
-
-  ngOnInit(): void {
-    // Este código carga el reproductor de la API en un iframe de manera asíncrona, siguiendo las instrucciones:
-    // https://developers.google.com/youtube/iframe_api_reference#Getting_Started
-    if (!this.media) this.media = { id: "media:0", url: this.getLinkPicture(), type: MediaType.Image }
-
-    if (this.media.type === 'video') {
-      const tag = document.createElement('script');
-      // create a id to be able to paly one by one
-
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.body.appendChild(tag);
-    }
-
-    return;
+  get linkPicture(): string {
+    return (this.media && this.media.type === 'image') ? this.media.url : `${this.default_picture}?${this.timeStamp}`;
   }
 }

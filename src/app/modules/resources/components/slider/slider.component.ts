@@ -31,6 +31,7 @@ export class SliderComponent {
   reachedEnd     = false;
   completed      = false;
 
+  // should come from the user
   locale = 'es';
 
   paper: WritableSignal<PaperWithResource>;
@@ -58,14 +59,14 @@ export class SliderComponent {
     return this.paper().resource[type]
   }
 
-  change_answer(new_answer: CustomEvent<Answer>): void {
+  change_answer(new_answer: Answer): void {
     this.paper.update((paper) => {
-      let index = paper.answers.findIndex((answer) => answer.question === new_answer.detail.question)
+      let index = paper.answers.findIndex((answer) => answer.question === new_answer.question)
 
       if (index === -1) {
-        paper.answers = [...paper.answers, new_answer.detail]
+        paper.answers = [...paper.answers, new_answer]
       } else {
-        paper.answers[index] = new_answer.detail
+        paper.answers[index] = new_answer
       }
 
       return paper
