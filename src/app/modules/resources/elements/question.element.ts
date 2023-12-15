@@ -5,12 +5,12 @@ import { Answer } from '../../../providers/models/answer.model'
 
 @customElement('question-element')
 export class QuestionElement extends LitElement {
-  @property({ type: Object }) question: Question
-  @property({ type: Object }) answer: Answer
-  @property({ type: String }) locale?: string = 'en'
-  @property({ type: String }) private content: string
 
-  private spellAnswer: string
+  @property({ type: Object }) answer: Answer
+  @property({ type: Object }) question: Question
+  @property({ type: String }) locale? = 'en'
+  @property({ state: true, type: String }) content = ''
+  @property({ state: true, type: String }) spellAnswer: string
 
   static styles = css`
     p {
@@ -33,14 +33,6 @@ export class QuestionElement extends LitElement {
       outline: none;
     }
   `;
-
-  constructor() {
-    super();
-
-    this.answer = new Answer()
-    this.spellAnswer = ''
-    this.content = ''
-  }
 
   spell(answer: string) {
     let question = this.question.question.find((content) => content.locale === this.locale)
@@ -86,13 +78,15 @@ export class QuestionElement extends LitElement {
 
   updated(changedProperties) {
     if (changedProperties.has('question')) {
-      this.answer.question = this.question.id;
+      if (!this.answer) this.answer = new Answer(this.question.id)
+      else this.answer.question = this.question.id;
+
       this.updateContent();
     }
 
-    if (changedProperties.has('locale')) {
-      this.updateContent();
-    }
+    // if (changedProperties.has('locale')) {
+    //   this.updateContent();
+    // }
   }
 
   updateContent() {
@@ -100,8 +94,9 @@ export class QuestionElement extends LitElement {
   }
 
   handleChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.changes(target);
+    console.log('handleChange')
+    // const target = event.target as HTMLInputElement;
+    // this.changes(target);
   }
 
   render() {
