@@ -16,7 +16,7 @@ export class ProjectService {
   #document   = inject(DOCUMENT)
 
   #outer_db = new SurrealJS()
-  #db_url = this.#document.location.hostname === 'localhost' ? "http://localhost:8000" : OUTER_DB
+  #db_url = this.#document.location.hostname === 'localhost' ? "ws://localhost:8000" : OUTER_DB
 
   #ready = signal(false)
   ready = computed(() => this.#ready())
