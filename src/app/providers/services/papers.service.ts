@@ -31,7 +31,7 @@ export class PapersService {
   load() {
     this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`)
       .then(resources => {
-        this.#storageSvc.query<PaperWithResource>(OutcomeEntity.papers, `SELECT * FROM papers FETCH answers`)
+        this.#storageSvc.query<PaperWithResource>(OutcomeEntity.papers, `SELECT * FROM papers ORDER BY created DESC FETCH answers`)
           .then(papers => {
             papers.forEach((paper: Paper) => {
               paper.resource = resources.find(resource => resource.id === paper.resource)

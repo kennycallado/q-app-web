@@ -19,9 +19,17 @@
       @if (paper.completed) { <span class="mt-auto">✅</span> }
       @else                 { <span class="mt-auto">❎</span> }
 
+      @if (paper.completed && paper.resource.type !== 'module') {
+      <a class="nav-link w-100 mx-3 text-center text-truncate" [routerLink]="[]">
+        <span class="lead">{{ $any(paper.resource).title }}</span>
+      </a>
+      }
+
+      @else {
       <a class="nav-link w-100 mx-3 text-center text-truncate" [routerLink]="['slider', paper.id]">
         <span class="lead">{{ $any(paper.resource).title }}</span>
       </a>
+      }
 
       <span class="mt-auto ms-auto text-success">{{ $any(paper.resource).type }}</span>
     </li>
