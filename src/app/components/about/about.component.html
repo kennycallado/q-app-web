@@ -1,1 +1,5 @@
-<p>about works!</p>
+<p>User info:</p>
+<pre>{{ user() | json }}</pre>
+
+<p>User score:</p>
+@if (scores().length > 0) { <pre>{{ get_score() | json }}</pre> }
