@@ -1,10 +1,19 @@
- QAppWeb
+QAppWeb
 
 ## NOTES:
 
+- Should modules are the only resources accessible after done?
+- There is a problem on live queries keep one eye on it
+
+## TODO:
+
+- [X] papers: order by create
+- [X] scores: basic service
+- [X] resources: only modules are accessible after done
+- [X] lit: consider avoid using lit. angular signal just have improved a lot
 - [ ] live: I think when DELETE it's returning the object or is the blob
 - [X] youtube: change `@angular/youtube-player` for `@justinribeiro/lite-youtube`
-  - [ ] styls: revisar bien, algo se podrá hacer...
+  - [ ] styles: revisar bien, algo se podrá hacer...
 - [X] scores: change records for scores
 
 ### LIVE SELECT
