@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core'
+import { Component, Input, ViewChild } from '@angular/core'
 
 import { YouTubePlayer } from '@angular/youtube-player';
 
