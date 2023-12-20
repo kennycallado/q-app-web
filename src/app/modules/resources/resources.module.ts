@@ -1,5 +1,6 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { YouTubePlayerModule } from '@angular/youtube-player';
 
 import { ResourcesRoutingModule } from './resources-routing.module';
 
@@ -19,11 +20,13 @@ import { QuestionComponent } from './components/question/question.component';
   ],
   imports: [
     CommonModule,
+    YouTubePlayerModule,
     RouterModule,
-    ResourcesRoutingModule
+    ResourcesRoutingModule,
   ],
   providers: [
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [
+  ]
 })
 export class ResourcesModule { }

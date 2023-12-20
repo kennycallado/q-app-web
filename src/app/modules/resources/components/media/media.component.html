@@ -1,8 +1,16 @@
-@if(this.media && this.media.type === 'video') {
-<lite-youtube
-  alt="{{ media?.alt ?? '' }}"
-  videoid="FoMlSB6ftQg"
-  params="controls=0"></lite-youtube>
+@if (this.media && this.media.type === 'video') {
+<div (click)="togglePlayback()">
+  <youtube-player
+    class="block"
+    [height]="300"
+    [width]="200"
+    [playerVars]="{'controls': 1}"
+    suggestedQuality="highres"
+    placeholderImageQuality="high"
+    videoId="{{ linkVideo }}"
+    #player>
+  </youtube-player>
+</div>
 } @else {
 <img
   src='{{ linkPicture }}'
