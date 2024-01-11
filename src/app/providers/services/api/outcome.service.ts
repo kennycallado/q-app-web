@@ -28,14 +28,14 @@ export class OutcomeService {
 
   #update = effect(async () => {
     if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
-      await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
+      // await this.#outer_db.connect(this.#db_url, undefined)
+      // await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
 
-      await this.#auth()
+      // await this.#auth()
 
-      await this.#live_answers()
-      await this.#live_papers()
-      await this.#live_scores()
+      // await this.#live_answers()
+      // await this.#live_papers()
+      // await this.#live_scores()
 
       this.#ready.set(true)
     }

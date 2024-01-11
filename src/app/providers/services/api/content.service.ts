@@ -29,17 +29,17 @@ export class ContentService {
 
   #update = effect(async () => {
     if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
-      await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
+      // await this.#outer_db.connect(this.#db_url, undefined)
+      // await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
 
-      await this.#auth()
+      // await this.#auth()
 
-      await this.#sync_locales()
+      // await this.#sync_locales()
 
-      await this.#live_media()
-      await this.#live_questions()
-      await this.#live_slides()
-      await this.#live_resources()
+      // await this.#live_media()
+      // await this.#live_questions()
+      // await this.#live_slides()
+      // await this.#live_resources()
 
       this.#ready.set(true)
     }

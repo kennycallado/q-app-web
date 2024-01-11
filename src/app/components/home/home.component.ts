@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 
 import { ContentEntity, OutcomeEntity } from '../../providers/types';
 import { StorageService } from '../../providers/services/storage.service';
-import { UserService } from '../../providers/services/user.service';
 
 import { Question } from '../../providers/models/question.model';
 import { Media } from '../../providers/models/media.model';
@@ -11,6 +10,7 @@ import { Slide } from '../../providers/models/slide.model';
 import { Answer } from '../../providers/models/answer.model';
 import { Paper } from '../../providers/models/paper.model';
 import { Score } from '../../providers/models/score.model';
+import { AuthService } from '../../providers/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -19,13 +19,13 @@ import { Score } from '../../providers/models/score.model';
 })
 export class HomeComponent {
   #storageSvc = inject(StorageService)
-  #userSvc    = inject(UserService)
+  #authSvc    = inject(AuthService)
 
-  user = this.#userSvc.user
+  token = this.#authSvc.access_token
 
   async blah() {
     console.log('blah')
-    console.log(this.user())
+    console.log(this.token())
   }
 
   async getEso(entity: string) {

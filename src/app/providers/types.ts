@@ -12,8 +12,3 @@ export enum OutcomeEntity {
   scores  = 'scores',
   scripts = 'scripts',
 }
-
-export enum ProjectEntity {
-  projects = 'projects',
-  users    = 'users',
-}
