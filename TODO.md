@@ -1,6 +1,6 @@
 ## TODO:
 
-- [ ] storage: I'll go with schemaless
+- [X] storage: I'll go with schemaless
   - ??? maybe ask for the events to the server
 
 - [X] media: `youtube-player` is back. No way to work with `lite-youtube`
