@@ -60,6 +60,8 @@ export class SliderComponent {
   }
 
   change_answer(new_answer: Answer): void {
+    if (new_answer.user === undefined) new_answer.user = this.paper().user;
+
     this.paper.update((paper) => {
       let index = paper.answers.findIndex((answer) => answer.question === new_answer.question)
 
