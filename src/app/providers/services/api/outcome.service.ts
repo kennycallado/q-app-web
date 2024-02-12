@@ -5,17 +5,19 @@ import { Surreal as SurrealJS } from 'surrealdb.js'
 
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
+import { AuthService } from '../auth.service';
 
 import { OUTER_DB } from '../../constants';
+import { Paper, PaperToPush } from '../../models/paper.model';
 import { OutcomeEntity } from '../../types';
 import { Answer } from '../../models/answer.model';
-import { Paper, PaperToPush } from '../../models/paper.model';
 import { Score } from '../../models/score.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OutcomeService {
+  #authSvc    = inject(AuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -27,15 +29,17 @@ export class OutcomeService {
   ready = computed(() => this.#ready())
 
   #update = effect(async () => {
-    if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
-      // await this.#outer_db.connect(this.#db_url, undefined)
-      // await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
+    if (
+        this.#storageSvc.ready !== undefined &&
+        this.#storageSvc.ready() &&
+        this.#authSvc.access_token()
+    ) {
+      await this.#outer_db.connect(this.#db_url, undefined)
+      await this.#outer_db.authenticate(this.#authSvc.access_token())
 
-      // await this.#auth()
-
-      // await this.#live_answers()
-      // await this.#live_papers()
-      // await this.#live_scores()
+      await this.#live_answers()
+      await this.#live_papers()
+      await this.#live_scores()
 
       this.#ready.set(true)
     }
@@ -47,20 +51,7 @@ export class OutcomeService {
 
   // async send_paper(paper: PaperToPush): Promise<any> {
   async send_paper(paper: PaperToPush) {
-    // console.log('sending paper', paper)
-    // if (paper.answers.length === 0) {
-    //   await this.#outer_db.update(paper.id, { ...paper })
-
-    //   return await this.#outer_db.query_raw(`fn::on_push($paper)`, { paper: JSON.stringify(paper) })
-    // } else {
-      await this.#outer_db.update(paper.id, { ...paper })
-      await this.#outer_db.query_raw(`LET $paper = (SELECT * FROM ${paper.id})[0]; fn::on_push($paper)`)
-    // }
-  }
-
-  async #auth() {
-    await this.#outer_db.signin({ username: 'root', password: 'root' })
-    // await this.#outer_db.signin({ username: 'viewer', password: 'viewer', namespace: 'test' })
+    await this.#outer_db.query(`fn::on_push(${paper.id}, ${JSON.stringify(paper.answers)})`)
   }
 
   async #live_answers() {
@@ -96,7 +87,7 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(OutcomeEntity.answers, `DELETE ${result}`)
+            await this.#storageSvc.query(OutcomeEntity.answers, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':
@@ -147,7 +138,7 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${result}`)
+            await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':
@@ -205,7 +196,7 @@ export class OutcomeService {
           case 'DELETE':
 
             // creo que result.id
-            await this.#storageSvc.query(OutcomeEntity.papers, `DELETE ${result}`)
+            await this.#storageSvc.query(OutcomeEntity.papers, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':

@@ -3,20 +3,22 @@ import { DOCUMENT } from '@angular/common';
 
 import { Surreal as SurrealJS } from 'surrealdb.js'
 
-import { OUTER_DB } from '../../constants';
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
+import { AuthService } from '../auth.service';
 
+import { OUTER_DB } from '../../constants';
 import { ContentEntity } from '../../types';
-import { Media } from '../../models/media.model';
 import { Question } from '../../models/question.model';
-import { Slide } from '../../models/slide.model';
 import { Resource } from '../../models/resource.model';
+import { Media } from '../../models/media.model';
+import { Slide } from '../../models/slide.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContentService {
+  #authSvc    = inject(AuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -28,26 +30,24 @@ export class ContentService {
   ready = computed(() => this.#ready())
 
   #update = effect(async () => {
-    if (this.#storageSvc.ready !== undefined && this.#storageSvc.ready()) {
-      // await this.#outer_db.connect(this.#db_url, undefined)
-      // await this.#outer_db.use({ namespace: 'projects', database: 'demo' })
+    if (
+        this.#storageSvc.ready !== undefined &&
+        this.#storageSvc.ready() &&
+        this.#authSvc.access_token()
+    ) {
+      await this.#outer_db.connect(this.#db_url, undefined)
+      await this.#outer_db.authenticate(this.#authSvc.access_token())
 
-      // await this.#auth()
+      await this.#sync_locales()
 
-      // await this.#sync_locales()
-
-      // await this.#live_media()
-      // await this.#live_questions()
-      // await this.#live_slides()
-      // await this.#live_resources()
+      await this.#live_media()
+      await this.#live_questions()
+      await this.#live_slides()
+      await this.#live_resources()
 
       this.#ready.set(true)
     }
   })
-
-  async #auth() {
-    await this.#outer_db.signin({ username: 'root', password: 'root' })
-  }
 
   async #sync_locales() {
     let coming_locales = await this.#outer_db.select(ContentEntity.locales);
@@ -91,7 +91,7 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(ContentEntity.media, `DELETE ${result}`)
+            await this.#storageSvc.query(ContentEntity.media, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':
@@ -143,7 +143,7 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(ContentEntity.questions, `DELETE ${result}`)
+            await this.#storageSvc.query(ContentEntity.questions, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':
@@ -197,7 +197,7 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(ContentEntity.slides, `DELETE ${result}`)
+            await this.#storageSvc.query(ContentEntity.slides, `DELETE ${result.id}`)
             break;
           case 'CREATE':
           case 'UPDATE':
@@ -255,7 +255,7 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(ContentEntity.resources, `DELETE ${result}`)
+            await this.#storageSvc.query(ContentEntity.resources, `DELETE ${result.id}`)
 
             break;
           case 'CREATE':
