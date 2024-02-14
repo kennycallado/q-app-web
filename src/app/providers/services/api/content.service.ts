@@ -5,7 +5,7 @@ import { Surreal as SurrealJS } from 'surrealdb.js'
 
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
-import { AuthService } from '../auth.service';
+import { InterAuthService } from '../interventions/auth.service';
 
 import { OUTER_DB } from '../../constants';
 import { ContentEntity } from '../../types';
@@ -18,7 +18,7 @@ import { Slide } from '../../models/slide.model';
   providedIn: 'root'
 })
 export class ContentService {
-  #authSvc    = inject(AuthService)
+  #authSvc    = inject(InterAuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -33,10 +33,10 @@ export class ContentService {
     if (
         this.#storageSvc.ready !== undefined &&
         this.#storageSvc.ready() &&
-        this.#authSvc.access_token()
+        this.#authSvc.inter_token()
     ) {
       await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.authenticate(this.#authSvc.access_token())
+      await this.#outer_db.authenticate(this.#authSvc.inter_token())
 
       await this.#sync_locales()
 

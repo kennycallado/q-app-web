@@ -19,16 +19,7 @@ export class StorageService {
   // ????
 
   #update = effect(async () => {
-    // prepare db
-    await this.#inner_db.connect(INNER_DB, { capabilities: true })
-    await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
-
-    // set ready asap
-    this.#inner_db
-      .query('INFO FOR DB;', undefined)
-      .then(async (res) => {
-        if (res) this.#ready.set(true)
-      })
+    await this.init();
   });
 
   async query<T>(
@@ -37,6 +28,7 @@ export class StorageService {
     params?: any
   ): Promise<Array<T>> {
     try {
+      await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
       return await this.#inner_db.query(query, params);
     } catch (e) {
       console.error(e);
@@ -46,6 +38,7 @@ export class StorageService {
 
   async get<T>(key: ContentEntity | OutcomeEntity, id?: string): Promise<Array<T>> {
     try {
+      await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
       return await this.#inner_db.select(key);
     } catch (e) {
       console.log(e);
@@ -55,6 +48,7 @@ export class StorageService {
 
   async set<T>(key: ContentEntity | OutcomeEntity, content: any): Promise<T> {
     try {
+      await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
       return await this.#inner_db.create(key, content);
     } catch (e) {
       if (e.includes('already exists')) {
@@ -68,11 +62,22 @@ export class StorageService {
 
   async update<T>(key: ContentEntity | OutcomeEntity, content: T): Promise<T> {
     try {
+      await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
       return await this.#inner_db.update(key, content);
     } catch (e) {
       console.error(e);
       return;
     }
+  }
+
+  private async init() {
+    // prepare db
+    await this.#inner_db.connect(INNER_DB, { capabilities: true })
+    await this.#inner_db.use({ ns: 'global', db: this.#db_name })
+
+    this.#inner_db
+      .version()
+      .then(res => { if (res) this.#ready.set(true) })
   }
 
   // private async init() {

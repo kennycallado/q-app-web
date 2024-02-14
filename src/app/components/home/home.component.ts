@@ -10,7 +10,7 @@ import { Slide } from '../../providers/models/slide.model';
 import { Answer } from '../../providers/models/answer.model';
 import { Paper } from '../../providers/models/paper.model';
 import { Score } from '../../providers/models/score.model';
-import { AuthService } from '../../providers/services/auth.service';
+import { InterAuthService } from '../../providers/services/interventions/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -19,9 +19,9 @@ import { AuthService } from '../../providers/services/auth.service';
 })
 export class HomeComponent {
   #storageSvc = inject(StorageService)
-  #authSvc    = inject(AuthService)
+  #authSvc    = inject(InterAuthService)
 
-  token = this.#authSvc.access_token
+  token = this.#authSvc.inter_token
 
   async blah() {
     console.log('blah')
