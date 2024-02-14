@@ -1,8 +1,8 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { StorageService } from './storage.service';
-import { OutcomeService } from './api/outcome.service';
-import { ContentService } from './api/content.service';
+import { OutcomeService } from './interventions/outcome.service';
+import { ContentService } from './interventions/content.service';
 
 import { ContentEntity, OutcomeEntity } from '../types';
 import { Paper, PaperToPush, PaperWithResource } from '../models/paper.model';
