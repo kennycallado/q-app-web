@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 
 import { ContentEntity, OutcomeEntity } from '../../providers/types';
+
 import { StorageService } from '../../providers/services/storage.service';
+import { InterAuthService } from '../../providers/services/interventions/auth.service';
 
 import { Question } from '../../providers/models/question.model';
 import { Media } from '../../providers/models/media.model';
@@ -10,7 +12,6 @@ import { Slide } from '../../providers/models/slide.model';
 import { Answer } from '../../providers/models/answer.model';
 import { Paper } from '../../providers/models/paper.model';
 import { Score } from '../../providers/models/score.model';
-import { InterAuthService } from '../../providers/services/interventions/auth.service';
 
 @Component({
   selector: 'app-home',
