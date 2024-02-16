@@ -1,5 +1,11 @@
 ## TODO:
 
+- [ ] offline: some services connect on init
+  - navigator.onLine property
+  - [ ] when offline send jobs to backgrund sync
+- [ ] global: create a global service for auth outside the intervention
+
+- [X] live q: there is some problem when recive a delete... [object Object]
 - [X] storage: I'll go with schemaless
   - ??? maybe ask for the events to the server
 
@@ -8,8 +14,8 @@
 - [X] scores: basic service
 - [X] resources: only modules are accessible after done
 - [X] lit: consider avoid using lit. angular signal just have improved a lot
-- [ ] live: I think when DELETE it's returning the object or is the blob
+- [X] live: I think when DELETE it's returning the object or is the blob
 - [X] youtube: change `@angular/youtube-player` for `@justinribeiro/lite-youtube`
-  - [ ] styles: revisar bien, algo se podrá hacer...
+  - [~] styles: revisar bien, algo se podrá hacer...
 - [X] scores: change records for scores
 
