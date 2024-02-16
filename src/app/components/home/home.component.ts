@@ -21,11 +21,9 @@ export class HomeComponent {
   #storageSvc = inject(StorageService)
   #authSvc    = inject(InterAuthService)
 
-  token = this.#authSvc.inter_token
-
   async blah() {
     console.log('blah')
-    console.log(this.token())
+    console.log(this.#authSvc.inter_token())
   }
 
   async getEso(entity: string) {
