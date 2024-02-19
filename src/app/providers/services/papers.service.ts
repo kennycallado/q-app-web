@@ -44,16 +44,16 @@ export class PapersService {
 
   async update(paper: PaperWithResource) {
     if (paper.answers.length > 0) {
-      this.#storageSvc.query<Answer>(
-        OutcomeEntity.answers,
-        `INSERT INTO answers [${paper.answers.map(answer => JSON.stringify(answer)).join(',')}]`
-      ).then(async (answers: Answer[]) => {
-        await this.#outcomeSvc.send_answers(answers)
-        await this.#outcomeSvc.send_paper(new PaperToPush(paper.id, answers))
-      })
+      let answers_str = paper.answers.map(answer => JSON.stringify(answer)).join(',')
 
+      this.#storageSvc.query_inter<Answer>(`INSERT INTO answers [${answers_str}]`)
+        .then(async (answers: Answer[]) => {
+          await this.#outcomeSvc.send_answers(answers)
+          await this.#outcomeSvc.send_paper(new PaperToPush(paper.id, answers))
+        })
+
+    } else {
+      await this.#outcomeSvc.send_paper(new PaperToPush(paper.id))
     }
-
-    await this.#outcomeSvc.send_paper(new PaperToPush(paper.id))
   }
 }
