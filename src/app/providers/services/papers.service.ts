@@ -4,7 +4,6 @@ import { StorageService } from './storage.service';
 import { OutcomeService } from './interventions/outcome.service';
 import { ContentService } from './interventions/content.service';
 
-import { ContentEntity, OutcomeEntity } from '../types';
 import { Paper, PaperToPush, PaperWithResource } from '../models/paper.model';
 import { Resource } from '../models/resource.model';
 import { Answer } from '../models/answer.model';
@@ -29,9 +28,9 @@ export class PapersService {
   })
 
   load() {
-    this.#storageSvc.query<Resource>(ContentEntity.resources, `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media`)
+    this.#storageSvc.query_inter<Resource>(`SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media;`)
       .then(resources => {
-        this.#storageSvc.query<PaperWithResource>(OutcomeEntity.papers, `SELECT * FROM papers ORDER BY created DESC FETCH answers`)
+        this.#storageSvc.query_inter<PaperWithResource>(`SELECT * FROM papers ORDER BY created DESC FETCH answers;`)
           .then(papers => {
             papers.forEach((paper: Paper) => {
               paper.resource = resources.find(resource => resource.id === paper.resource)

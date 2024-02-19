@@ -8,10 +8,9 @@ import { PapersService } from '../papers.service';
 import { InterAuthService } from '../interventions/auth.service';
 
 import { OUTER_DB } from '../../constants';
-import { Paper, PaperToPush } from '../../models/paper.model';
-import { OutcomeEntity } from '../../types';
-import { Answer } from '../../models/answer.model';
-import { Score } from '../../models/score.model';
+import { Paper, PaperToPush, TPaper } from '../../models/paper.model';
+import { Answer, TAnswer } from '../../models/answer.model';
+import { Score, TScore } from '../../models/score.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,11 +31,13 @@ export class OutcomeService {
     if (
         this.#storageSvc.ready !== undefined &&
         this.#storageSvc.ready() &&
-        this.#authSvc.inter_token()
+        this.#authSvc.ready()
     ) {
-      await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#outer_db.authenticate(this.#authSvc.inter_token())
 
+      await this.#outer_db.connect(this.#db_url, undefined)
+      await this.#authSvc.authenticate(this.#outer_db)
+
+      // init live queries
       await this.#live_answers()
       await this.#live_papers()
       await this.#live_scores()
@@ -45,12 +46,13 @@ export class OutcomeService {
     }
   })
 
-  async send_answers(answers: any): Promise<any> {
-    return await this.#outer_db.query(`INSERT INTO answers [${answers.map((answer: any) => JSON.stringify(answer)).join(',')}]`)
+  async send_answers(answers: Answer[]): Promise<any> {
+    let answers_str = answers.map((answer: Answer) => JSON.stringify(answer)).join(',');
+    return await this.#outer_db.query(`INSERT INTO answers [${answers_str}]`)
   }
 
   // async send_paper(paper: PaperToPush): Promise<any> {
-  async send_paper(paper: PaperToPush) {
+  async send_paper(paper: PaperToPush): Promise<void> {
     await this.#outer_db.query(`fn::on_push(${paper.id}, ${JSON.stringify(paper.answers)})`)
   }
 
@@ -58,24 +60,24 @@ export class OutcomeService {
     // there is a way to ask just for the changes, but I don't know how
     // so I'm just going to ask for the whole thing and compare it with the local
 
-    let coming_answers = await this.#outer_db.select(OutcomeEntity.answers);
-    let local_answers = await this.#storageSvc.get<Answer>(OutcomeEntity.answers);
+    let coming_answers = await this.#outer_db.select<TAnswer>('answers');
+    let local_answers  = await this.#storageSvc.query_inter<Answer>(`SELECT * FROM answers;`);
 
     // detect deletes
     for (let answer of local_answers) {
       if (!coming_answers.find(a => a.id === answer.id)) {
-        await this.#storageSvc.query(OutcomeEntity.answers, `DELETE ${answer.id}`);
+        await this.#storageSvc.query_inter<Answer>(`DELETE ${answer.id};`);
       }
     }
 
     // detect updates
     // should update ??
     for (let answer of coming_answers) {
-      await this.#storageSvc.query(OutcomeEntity.answers,
+      await this.#storageSvc.query_inter<Answer>(
         `UPDATE ${answer.id} MERGE {
           answer: ${answer.answer},
           question: ${answer.question},
-        }`)
+        };`)
     }
 
     // live
@@ -87,16 +89,16 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(OutcomeEntity.answers, `DELETE ${result.id}`)
+            await this.#storageSvc.query_inter<Answer>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query(OutcomeEntity.answers,
+            await this.#storageSvc.query_inter(
               `UPDATE ${result.id} MERGE {
                 answer: ${result.answer},
                 question: ${result.question},
-              }`)
+              };`)
 
             break;
           default:
@@ -109,24 +111,24 @@ export class OutcomeService {
 
   async #live_scores() {
     // get both scores
-    let coming_score = await this.#outer_db.select(OutcomeEntity.scores);
-    let local_score = await this.#storageSvc.get<Score>(OutcomeEntity.scores);
+    let coming_score = await this.#outer_db.select<TScore>('scores');
+    let local_score  = await this.#storageSvc.query_inter<Score>(`SELECT * FROM scores;`);
 
     // detect deletes
     for (let score of local_score) {
       if (!coming_score.find(r => r.id === score.id)) {
-        await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${score.id}`);
+        await this.#storageSvc.query_inter<Score>(`DELETE ${score.id};`);
       }
     }
 
     // detect updates
     for (let score of coming_score) {
-      await this.#storageSvc.query(OutcomeEntity.scores,
+      await this.#storageSvc.query_inter<Score>(
         `UPDATE ${score.id} CONTENT {
           user: ${score.user},
           score: ${JSON.stringify(score.score)},
           created: ${JSON.stringify(score.created)},
-        }`)
+        };`)
     }
 
     // live
@@ -138,12 +140,12 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query(OutcomeEntity.scores, `DELETE ${result.id}`)
+            await this.#storageSvc.query_inter<Score>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query(OutcomeEntity.scores,
+            await this.#storageSvc.query_inter<Score>(
               `UPDATE ${result.id} CONTENT {
                 user: ${result.user},
                 score: ${JSON.stringify(result.score)},
@@ -163,27 +165,27 @@ export class OutcomeService {
     // there is a way to ask just for the changes, but I don't know how
     // so I'm just going to ask for the whole thing and compare it with the local
 
-    let coming_papers = await this.#outer_db.select('papers');
-    let local_papers = await this.#storageSvc.get<Paper>(OutcomeEntity.papers);
+    let coming_papers = await this.#outer_db.select<TPaper>('papers');
+    let local_papers  = await this.#storageSvc.query_inter<Paper>(`SELECT * FROM papers;`);
 
     // detect deletes
     // papers should never be deleted, but just in case
     for (let paper of local_papers) {
       if (!coming_papers.find(p => p.id === paper.id)) {
-        await this.#storageSvc.query(OutcomeEntity.papers, `DELETE ${paper.id}`);
+        await this.#storageSvc.query_inter<Paper>(`DELETE ${paper.id};`);
       }
     }
 
     // detect updates
     for (let paper of coming_papers) {
-      await this.#storageSvc.query(OutcomeEntity.papers,
+      await this.#storageSvc.query_inter<Paper>(
         `UPDATE ${paper.id} CONTENT {
           resource: ${paper.resource},
           user: ${paper.user},
           completed: ${paper.completed},
           answers: ${JSON.stringify(paper.answers)},
           created: ${JSON.stringify(paper.created)},
-        }`)
+        };`)
     }
 
     // live
@@ -195,20 +197,19 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            // creo que result.id
-            await this.#storageSvc.query(OutcomeEntity.papers, `DELETE ${result.id}`)
+            await this.#storageSvc.query_inter<Paper>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query(OutcomeEntity.papers,
+            await this.#storageSvc.query_inter<Paper>(
               `UPDATE ${result.id} CONTENT {
                 resource: ${result.resource},
                 user: ${result.user},
                 completed: ${result.completed},
                 answers: ${JSON.stringify(result.answers)},
                 created: ${JSON.stringify(result.created)},
-              }`)
+              };`)
 
             break;
           default:

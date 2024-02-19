@@ -1,8 +1,6 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { StorageService } from './storage.service';
-
-import { ContentEntity } from '../types';
 import { Resource } from '../models/resource.model';
 
 @Injectable({
@@ -11,31 +9,15 @@ import { Resource } from '../models/resource.model';
 export class ResourcesService {
   #storageSvc = inject(StorageService)
 
-  #waiting = true
   #resources = signal([] as Resource[])
   resources = computed(() => this.#resources())
 
-  constructor() {
-    (async () => await this.waiting())()
-  }
+  #update_on_storage_ready = effect(() => {
+    if (this.#storageSvc.ready()) this.load();
+  })
 
-  private async waiting() {
-    while (!this.#storageSvc.ready()) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    this.#waiting = false
-
-    // await this.load()
-  }
-
-  async load() {
-    if (this.#waiting) return
-
-    const resources = await this.#storageSvc.query<Resource>(
-      ContentEntity.resources,
-      `SELECT * FROM resources FETCH form, modules, slides, slides.question`
-    )
-
-    this.#resources.set(resources || [])
+  load() {
+    this.#storageSvc.query_inter<Resource>(`SELECT * FROM resources;`)
+      .then(resources => this.#resources.set(resources || {} as Resource[]))
   }
 }

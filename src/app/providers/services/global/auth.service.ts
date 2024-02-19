@@ -17,33 +17,57 @@ export class GlobalAuthService {
   #db_url   = this.#document.location.hostname === 'localhost' ? "ws://localhost:8000" : OUTER_DB
 
   // ????
-  #username = "kennycallado"
-  #password = "password"
-  #signin   = { namespace: 'global', database: 'main', scope: 'user', username: this.#username, password: this.#password }
+  #username = "kenny"
+  #credentials   = { namespace: 'global', database: 'main', scope: 'user', username: this.#username }
   // ????
 
-  #global_token = signal("")
-  global_token  = computed(() => this.#global_token())
+  #global_token = ""
+
+  #ready = signal(false)
+  ready = computed(() => this.#ready())
 
   #update_on_storage_ready = effect(() => {
-    if (this.#storageSvc.ready()) this.load()
+    if (this.#storageSvc.ready()) this.#load()
   })
 
-  load() {
-    if (!this.#password) return ; // show message ???
+  /**
+  * Authenticate the user with the database
+  * @param db - The database to authenticate with
+  *
+  * @returns - A promise that resolves when the user is authenticated
+  */
+  async authenticate(db: SurrealJS): Promise<void> {
+    try {
+      await db.authenticate(this.#global_token)
+    } catch (e) {
 
-    this.#storageSvc.query<string>(undefined, `RETURN $global_token;`)
+      console.error("Failed to authenticate: global/auth.service")
+      console.error(e)
+
+      await this.#signin(db)
+      await this.authenticate(db)
+    }
+  }
+
+  async #signin(db: SurrealJS): Promise<void> {
+    let a_token = await db.signin(this.#credentials)
+    await this.#storageSvc.query_global<string>(`DEFINE PARAM $global_token VALUE "${a_token}";`)
+
+    this.#global_token = a_token
+  }
+
+  #load() {
+    this.#storageSvc.query_global<string>(`RETURN $global_token;`)
       .then(async (a_token) => {
         if (a_token.length === 0) {
           await this.#outer_db.connect(this.#db_url)
-          this.#outer_db.signin(this.#signin).then(async (a_token) => {
-            this.#storageSvc.query<string>(undefined, `LET $global_token = "${a_token}";`)
-            this.#global_token.set(a_token)
-
-            await this.#outer_db.close()
-          })
+          await this.#signin(this.#outer_db)
+          await this.#outer_db.close()
+        } else {
+          this.#global_token = a_token[0]
         }
+
+        this.#ready.set(true)
       })
   }
 }
-
