@@ -1,6 +1,15 @@
 import { Answer } from "./answer.model";
 import { Resource } from "./resource.model";
 
+export type TPaper = {
+  id: string;
+  user: string; // user id
+  resource: string | Resource; // resource id
+  completed: boolean;
+  answers: string[] | Answer[];
+  created: Date;
+}
+
 export class Paper {
   id: string;
   user: string; // user id

@@ -1,3 +1,10 @@
+export type TQuestion = {
+  id: string;
+  type: QuestionType;
+  range?: RangeQuestion;
+  question: Content[];
+}
+
 export class Question {
   id: string;
   type: QuestionType;
