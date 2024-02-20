@@ -5,7 +5,7 @@ import { Surreal as SurrealJS } from 'surrealdb.js'
 
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
-import { InterAuthService } from '../interventions/auth.service';
+import { IntervAuthService } from '../interventions/auth.service';
 
 import { OUTER_DB } from '../../constants';
 import { Paper, PaperToPush, TPaper } from '../../models/paper.model';
@@ -16,7 +16,7 @@ import { Score, TScore } from '../../models/score.model';
   providedIn: 'root'
 })
 export class OutcomeService {
-  #authSvc    = inject(InterAuthService)
+  #authSvc    = inject(IntervAuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -35,7 +35,7 @@ export class OutcomeService {
     ) {
 
       await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#authSvc.authenticate(this.#outer_db)
+      await this.#authSvc.interv_authenticate(this.#outer_db)
 
       // init live queries
       await this.#live_answers()
@@ -61,19 +61,19 @@ export class OutcomeService {
     // so I'm just going to ask for the whole thing and compare it with the local
 
     let coming_answers = await this.#outer_db.select<TAnswer>('answers');
-    let local_answers  = await this.#storageSvc.query_inter<Answer>(`SELECT * FROM answers;`);
+    let local_answers  = await this.#storageSvc.query_interv<Answer>(`SELECT * FROM answers;`);
 
     // detect deletes
     for (let answer of local_answers) {
       if (!coming_answers.find(a => a.id === answer.id)) {
-        await this.#storageSvc.query_inter<Answer>(`DELETE ${answer.id};`);
+        await this.#storageSvc.query_interv<Answer>(`DELETE ${answer.id};`);
       }
     }
 
     // detect updates
     // should update ??
     for (let answer of coming_answers) {
-      await this.#storageSvc.query_inter<Answer>(
+      await this.#storageSvc.query_interv<Answer>(
         `UPDATE ${answer.id} MERGE {
           answer: ${answer.answer},
           question: ${answer.question},
@@ -89,12 +89,12 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Answer>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Answer>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter(
+            await this.#storageSvc.query_interv(
               `UPDATE ${result.id} MERGE {
                 answer: ${result.answer},
                 question: ${result.question},
@@ -112,18 +112,18 @@ export class OutcomeService {
   async #live_scores() {
     // get both scores
     let coming_score = await this.#outer_db.select<TScore>('scores');
-    let local_score  = await this.#storageSvc.query_inter<Score>(`SELECT * FROM scores;`);
+    let local_score  = await this.#storageSvc.query_interv<Score>(`SELECT * FROM scores;`);
 
     // detect deletes
     for (let score of local_score) {
       if (!coming_score.find(r => r.id === score.id)) {
-        await this.#storageSvc.query_inter<Score>(`DELETE ${score.id};`);
+        await this.#storageSvc.query_interv<Score>(`DELETE ${score.id};`);
       }
     }
 
     // detect updates
     for (let score of coming_score) {
-      await this.#storageSvc.query_inter<Score>(
+      await this.#storageSvc.query_interv<Score>(
         `UPDATE ${score.id} CONTENT {
           user: ${score.user},
           score: ${JSON.stringify(score.score)},
@@ -140,12 +140,12 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Score>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Score>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Score>(
+            await this.#storageSvc.query_interv<Score>(
               `UPDATE ${result.id} CONTENT {
                 user: ${result.user},
                 score: ${JSON.stringify(result.score)},
@@ -166,19 +166,19 @@ export class OutcomeService {
     // so I'm just going to ask for the whole thing and compare it with the local
 
     let coming_papers = await this.#outer_db.select<TPaper>('papers');
-    let local_papers  = await this.#storageSvc.query_inter<Paper>(`SELECT * FROM papers;`);
+    let local_papers  = await this.#storageSvc.query_interv<Paper>(`SELECT * FROM papers;`);
 
     // detect deletes
     // papers should never be deleted, but just in case
     for (let paper of local_papers) {
       if (!coming_papers.find(p => p.id === paper.id)) {
-        await this.#storageSvc.query_inter<Paper>(`DELETE ${paper.id};`);
+        await this.#storageSvc.query_interv<Paper>(`DELETE ${paper.id};`);
       }
     }
 
     // detect updates
     for (let paper of coming_papers) {
-      await this.#storageSvc.query_inter<Paper>(
+      await this.#storageSvc.query_interv<Paper>(
         `UPDATE ${paper.id} CONTENT {
           resource: ${paper.resource},
           user: ${paper.user},
@@ -197,12 +197,12 @@ export class OutcomeService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Paper>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Paper>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Paper>(
+            await this.#storageSvc.query_interv<Paper>(
               `UPDATE ${result.id} CONTENT {
                 resource: ${result.resource},
                 user: ${result.user},

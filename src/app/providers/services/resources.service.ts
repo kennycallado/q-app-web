@@ -17,7 +17,7 @@ export class ResourcesService {
   })
 
   load() {
-    this.#storageSvc.query_inter<Resource>(`SELECT * FROM resources;`)
+    this.#storageSvc.query_interv<Resource>(`SELECT * FROM resources;`)
       .then(resources => this.#resources.set(resources || {} as Resource[]))
   }
 }

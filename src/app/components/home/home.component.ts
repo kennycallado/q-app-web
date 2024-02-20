@@ -1,9 +1,8 @@
 import { Component, inject } from '@angular/core';
 
-import { ContentEntity, OutcomeEntity } from '../../providers/types';
-
 import { StorageService } from '../../providers/services/storage.service';
-import { InterAuthService } from '../../providers/services/interventions/auth.service';
+import { IntervAuthService } from '../../providers/services/interventions/auth.service';
+import { GlobalAuthService } from '../../providers/services/global/auth.service';
 
 import { Question } from '../../providers/models/question.model';
 import { Media } from '../../providers/models/media.model';
@@ -20,56 +19,35 @@ import { Score } from '../../providers/models/score.model';
 })
 export class HomeComponent {
   #storageSvc = inject(StorageService)
-  #authSvc    = inject(InterAuthService)
+  #interv_authSvc   = inject(IntervAuthService)
+  #global_authSvc   = inject(GlobalAuthService)
 
-  async blah() {
-    console.log('blah')
-    console.log(this.#authSvc.inter_token())
+  async global_login() {
+    console.log(await this.#global_authSvc.global_login("kenny"))
+
+    setTimeout(() => {
+      console.log(`globally auth: ${this.#global_authSvc.authenticated()}`)
+      }, 500)
+  }
+
+  async interv_login() {
+    console.log(await this.#interv_authSvc.interv_login("demo", "01HJTEBG4Y1EAXPATENCDCT7WW"))
+
+    setTimeout(() => {
+      console.log(`interv auth: ${this.#interv_authSvc.authenticated()}`)
+      } , 500)
   }
 
   async getEso(entity: string) {
     let result: Promise<Array<Question | Media | Resource | Slide>>;
-
-    switch (entity) {
-      case ContentEntity.questions:
-        result = this.#storageSvc.get<Question>(ContentEntity.questions)
-        break;
-      case ContentEntity.media:
-        result = this.#storageSvc.get<Media>(ContentEntity.media)
-        break;
-      case ContentEntity.resources:
-        result = this.#storageSvc.get<Resource>(ContentEntity.resources)
-        break;
-      case ContentEntity.slides:
-        result = this.#storageSvc.get<Slide>(ContentEntity.slides)
-        break;
-
-      default:
-        console.log('entity not defined')
-        break;
-    }
+    result = this.#storageSvc.query_interv(`SELECT * FROM ${entity};`)
 
     console.log(await result)
   }
 
   async getEsto(entity: string) {
     let result: Promise<Array<Answer | Paper | Score>>
-
-    switch (entity) {
-      case OutcomeEntity.answers:
-        result = this.#storageSvc.get<Answer>(OutcomeEntity.answers)
-        break;
-      case OutcomeEntity.papers:
-        result = this.#storageSvc.get<Paper>(OutcomeEntity.papers)
-        break;
-      case OutcomeEntity.scores:
-        result = this.#storageSvc.get<Score>(OutcomeEntity.scores)
-        break;
-
-      default:
-        console.log('entity not defined')
-        break;
-    }
+    result = this.#storageSvc.query_interv(`SELECT * FROM ${entity};`)
 
     console.log(await result)
   }

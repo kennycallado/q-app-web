@@ -18,7 +18,7 @@ export class ScoresService {
   })
 
   load() {
-    this.#storageSvc.query_inter<Score>(`SELECT * FROM scores ORDER BY created;`)
+    this.#storageSvc.query_interv<Score>(`SELECT * FROM scores ORDER BY created;`)
       .then(scores => this.#scores.set(scores || {} as Score[]))
   }
 }

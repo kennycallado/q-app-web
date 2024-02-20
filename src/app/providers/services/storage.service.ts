@@ -34,7 +34,7 @@ export class StorageService {
     }
   }
 
-  async query_inter<T>(query: string, params?: any): Promise<Array<T>> {
+  async query_interv<T>(query: string, params?: any): Promise<Array<T>> {
     try {
       await this.#inner_db.use({ ns: 'interventions', db: this.#db_name })
       return await this.#inner_db.query(query, params)

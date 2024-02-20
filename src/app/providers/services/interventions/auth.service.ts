@@ -5,11 +5,13 @@ import { Surreal as SurrealJS } from 'surrealdb.js'
 
 import { StorageService } from '../storage.service'
 import { OUTER_DB } from '../../constants'
+import { GlobalAuthService } from '../global/auth.service'
 
 @Injectable({
   providedIn: 'root'
 })
-export class InterAuthService {
+export class IntervAuthService {
+  #globalAuthSvc = inject(GlobalAuthService)
   #storageSvc = inject(StorageService)
   #document   = inject(DOCUMENT)
 
@@ -17,56 +19,64 @@ export class InterAuthService {
   #db_url   = this.#document.location.hostname === 'localhost' ? "ws://localhost:8000" : OUTER_DB
 
   // ????
-  #project = "demo"
-  #pass    = "01HJTEBG4Y1EAXPATENCDCT7WW"
-  #credentials  = { namespace: "interventions", database: this.#project, scope: "user", pass: this.#pass }
+  // #project = "demo"
+  // #pass    = "01HJTEBG4Y1EAXPATENCDCT7WW"
   // ????
 
-  #inter_token = ""
+  #interv_token = signal("")
+  authenticated = computed(() => this.#interv_token().length > 0)
 
   #ready = signal(false)
-  ready = computed(() => this.#ready())
+  ready  = computed(() => this.#ready())
 
   #update_on_storage_ready = effect(() => {
-    if (this.#storageSvc.ready()) this.#load()
+    if (this.#storageSvc.ready() && this.#globalAuthSvc.authenticated()) this.#load()
   })
 
-  /**
-  * Authenticate the user with the database
-  * @param db - The database to authenticate with
-  *
-  * @returns - A promise that resolves when the user is authenticated
-  */
-  async authenticate(db: SurrealJS): Promise<void> {
+  async interv_login(project: string, pass: string): Promise<boolean> {
+    if (!this.#globalAuthSvc.authenticated()) throw new Error("Global auth required: interventions/auth.service")
+
+    await this.#outer_db.connect(this.#db_url)
+    return await this.#signin(this.#outer_db, project, pass)
+  }
+
+  async interv_authenticate(db: SurrealJS): Promise<boolean> {
+    if (!this.#globalAuthSvc.authenticated()) throw new Error("Global auth required: interventions/auth.service")
+
+    return await db.authenticate(this.#interv_token())
+  }
+
+  async #signin(db: SurrealJS, project: string, pass: string): Promise<boolean> {
+    const credentials = { namespace: 'interventions', database: project, scope: 'user', pass };
+
     try {
-      await db.authenticate(this.#inter_token)
+      this.#set_interv_token(await db.signin(credentials))
+
+      return true
     } catch (e) {
+      this.#set_interv_token("")
 
-      console.error("Failed to authenticate: global/auth.service")
-      console.error(e)
-
-      await this.#signin(db)
-      await this.authenticate(db)
+      return false
     }
   }
 
-  async #signin(db: SurrealJS): Promise<void> {
-    let a_token = await db.signin(this.#credentials)
-    await this.#storageSvc.query_inter<string>(`DEFINE PARAM $inter_token VALUE "${a_token}";`)
-
-    this.#inter_token = a_token
+  #set_interv_token(a_token: string) {
+    this.#storageSvc
+      .query_global<string>(`DEFINE PARAM $interv_token VALUE "${a_token}";`) // should use global ns
+      .then(() => {
+        this.#interv_token.set(a_token)
+      })
   }
 
   #load() {
-    this.#storageSvc.query_inter<string>(`RETURN $inter_token;`)
+    this.#storageSvc
+      .query_global<string>(`RETURN $interv_token;`) // should use global ns
       .then(async (a_token) => {
-        if (a_token.length === 0) {
-          await this.#outer_db.connect(this.#db_url)
-          await this.#signin(this.#outer_db)
-          await this.#outer_db.close()
-        } else {
-          this.#inter_token = a_token[0]
-        }
+        if (a_token.length === 0 || a_token[0].length === 0) {
+          // redirect to join project
+          throw new Error("Failed to load interv token: interventions/auth.service")
+
+        } else this.#set_interv_token(a_token[0])
 
         this.#ready.set(true)
       })

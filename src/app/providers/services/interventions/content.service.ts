@@ -5,7 +5,7 @@ import { Surreal as SurrealJS } from 'surrealdb.js'
 
 import { StorageService } from '../storage.service';
 import { PapersService } from '../papers.service';
-import { InterAuthService } from '../interventions/auth.service';
+import { IntervAuthService } from '../interventions/auth.service';
 
 import { OUTER_DB } from '../../constants';
 import { Question, TQuestion } from '../../models/question.model';
@@ -17,7 +17,7 @@ import { Slide, TSlide } from '../../models/slide.model';
   providedIn: 'root'
 })
 export class ContentService {
-  #authSvc    = inject(InterAuthService)
+  #authSvc    = inject(IntervAuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -36,7 +36,7 @@ export class ContentService {
     ) {
 
       await this.#outer_db.connect(this.#db_url, undefined)
-      await this.#authSvc.authenticate(this.#outer_db)
+      await this.#authSvc.interv_authenticate(this.#outer_db)
 
       // sync locales table
       await this.#sync_locales()
@@ -55,7 +55,7 @@ export class ContentService {
     let coming_locales = await this.#outer_db.select('locales')
 
     for (let result of coming_locales) {
-      await this.#storageSvc.query_inter(
+      await this.#storageSvc.query_interv(
         `UPDATE ${result.id} CONTENT {
           locale: ${JSON.stringify(result.locale)},
         };`)
@@ -65,18 +65,18 @@ export class ContentService {
   async #live_media() {
     // get both media
     let coming_media = await this.#outer_db.select<TMedia>('media')
-    let local_media  = await this.#storageSvc.query_inter<Media>(`SELECT * FROM media;`)
+    let local_media  = await this.#storageSvc.query_interv<Media>(`SELECT * FROM media;`)
 
     // detect deletes
     for (let media of local_media) {
       if (!coming_media.find(m => m.id === media.id)) {
-        await this.#storageSvc.query_inter<Media>(`DELETE ${media.id};`)
+        await this.#storageSvc.query_interv<Media>(`DELETE ${media.id};`)
       }
     }
 
     // detect updates
     for (let result of coming_media) {
-      await this.#storageSvc.query_inter<Media>(
+      await this.#storageSvc.query_interv<Media>(
         `UPDATE ${result.id} CONTENT {
           alt: ${JSON.stringify(result.alt)},
           type: ${JSON.stringify(result.type)},
@@ -93,12 +93,12 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Media>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Media>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Media>(
+            await this.#storageSvc.query_interv<Media>(
               `UPDATE ${result.id} CONTENT {
                 alt: ${JSON.stringify(result.alt)},
                 type: ${JSON.stringify(result.type)},
@@ -117,18 +117,18 @@ export class ContentService {
   async #live_questions() {
     // get both questions
     let coming_questions = await this.#outer_db.select<TQuestion>('questions')
-    let local_questions  = await this.#storageSvc.query_inter<Question>(`SELECT * FROM questions;`)
+    let local_questions  = await this.#storageSvc.query_interv<Question>(`SELECT * FROM questions;`)
 
     // detect deletes
     for (let question of local_questions) {
       if (!coming_questions.find(q => q.id === question.id)) {
-        await this.#storageSvc.query_inter<Question>(`DELETE ${question.id};`)
+        await this.#storageSvc.query_interv<Question>(`DELETE ${question.id};`)
       }
     }
 
     // detect updates
     for (let result of coming_questions) {
-      await this.#storageSvc.query_inter<Question>(
+      await this.#storageSvc.query_interv<Question>(
         `UPDATE ${result.id} CONTENT {
           type: ${JSON.stringify(result.type)},
           range: ${JSON.stringify(result.range)},
@@ -145,12 +145,12 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Question>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Question>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Question>(
+            await this.#storageSvc.query_interv<Question>(
               `UPDATE ${result.id} CONTENT {
                 type: ${JSON.stringify(result.type)},
                 range: ${JSON.stringify(result.range)},
@@ -169,18 +169,18 @@ export class ContentService {
   async #live_slides() {
     // get both slides
     let coming_slides = await this.#outer_db.select<TSlide>('slides')
-    let local_slides  = await this.#storageSvc.query_inter<Slide>(`SELECT * FROM slides;`)
+    let local_slides  = await this.#storageSvc.query_interv<Slide>(`SELECT * FROM slides;`)
 
     // detect deletes
     for (let slide of local_slides) {
       if (!coming_slides.find(s => s.id === slide.id)) {
-        await this.#storageSvc.query_inter<Slide>(`DELETE ${slide.id};`)
+        await this.#storageSvc.query_interv<Slide>(`DELETE ${slide.id};`)
       }
     }
 
     // detect updates
     for (let result of coming_slides) {
-      await this.#storageSvc.query_inter<Slide>(
+      await this.#storageSvc.query_interv<Slide>(
         `UPDATE ${result.id} CONTENT {
           title: ${JSON.stringify(result.title)},
           content: ${JSON.stringify(result.content)},
@@ -199,12 +199,12 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter<Slide>(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv<Slide>(`DELETE ${result.id};`)
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Slide>(
+            await this.#storageSvc.query_interv<Slide>(
               `UPDATE ${result.id} CONTENT {
                 title: ${JSON.stringify(result.title)},
                 content: ${JSON.stringify(result.content)},
@@ -225,18 +225,18 @@ export class ContentService {
   async #live_resources() {
     // get both resources
     let coming_resources = await this.#outer_db.select<TResource>('resources')
-    let local_resources = await this.#storageSvc.query_inter<Resource>(`SELECT * FROM resources;`)
+    let local_resources = await this.#storageSvc.query_interv<Resource>(`SELECT * FROM resources;`)
 
     // detect deletes
     for (let resource of local_resources) {
       if (!coming_resources.find(r => r.id === resource.id)) {
-        await this.#storageSvc.query_inter(`DELETE ${resource.id};`)
+        await this.#storageSvc.query_interv(`DELETE ${resource.id};`)
       }
     }
 
     // detect updates
     for (let result of coming_resources) {
-      await this.#storageSvc.query_inter<Resource>(
+      await this.#storageSvc.query_interv<Resource>(
         `UPDATE ${result.id} CONTENT {
           ref: ${JSON.stringify(result.ref)},
           description: ${JSON.stringify(result.description)},
@@ -257,13 +257,13 @@ export class ContentService {
           case 'CLOSE': return;
           case 'DELETE':
 
-            await this.#storageSvc.query_inter(`DELETE ${result.id};`)
+            await this.#storageSvc.query_interv(`DELETE ${result.id};`)
 
             break;
           case 'CREATE':
           case 'UPDATE':
 
-            await this.#storageSvc.query_inter<Resource>(
+            await this.#storageSvc.query_interv<Resource>(
               `UPDATE ${result.id} CONTENT {
                 ref: ${JSON.stringify(result.ref)},
                 description: ${JSON.stringify(result.description)},
