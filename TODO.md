@@ -1,9 +1,28 @@
 ## TODO:
 
+- [ ] store: all calls for query_... to query
+
+- [ ] global auth: for some reason needs a setTimeout
+- [X] global: create a global service for auth outside the intervention
+
+- [ ] zod: schema validation
+  - for validation on the storage
+  - for incomming result validation
+
+- [ ] auth: try auth0 for general authentication:
+  - global and interventions
+  - [ ] guards
+  - [ ] login interface
+  - [ ] join project interface
+
+- [ ] resources: maybe there is more services with different ready pattern
+
 - [ ] offline: some services connect on init
+  - [ ] online service
+  - [~] basic: content and outcome only connect when online
   - navigator.onLine property
   - [ ] when offline send jobs to backgrund sync
-- [ ] global: create a global service for auth outside the intervention
+
 
 - [X] live q: there is some problem when recive a delete... [object Object]
 - [X] storage: I'll go with schemaless

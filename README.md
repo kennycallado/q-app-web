@@ -3,6 +3,7 @@ QAppWeb
 ## NOTES:
 
 - Should modules are the only resources accessible after done?
+- Score.score is an object stored as json
 
 ### LIVE SELECT
 - until it's implemented into wasm I'll use the js sdk
