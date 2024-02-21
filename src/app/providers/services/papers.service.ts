@@ -19,24 +19,24 @@ export class PapersService {
   #papers = signal([] as PaperWithResource[])
   papers = computed(() => this.#papers())
 
-  #update_on_storage_ready = effect(() => {
-    if (this.#storageSvc.ready()) this.load()
-  })
-
   #update_on_outers_ready = effect(() => {
-    if (this.#contentSvc.ready() && this.#outcomeSvc.ready()) this.load()
+    if (this.#storageSvc.ready() && this.#contentSvc.ready() && this.#outcomeSvc.ready()) this.load()
   })
 
   load() {
-    this.#storageSvc.query_interv<Resource>(`SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media;`)
-      .then(resources => {
-        this.#storageSvc.query_interv<PaperWithResource>(`SELECT * FROM papers ORDER BY created DESC FETCH answers;`)
-          .then(papers => {
-            papers.forEach((paper: Paper) => {
-              paper.resource = resources.find(resource => resource.id === paper.resource)
+    this.#storageSvc.query(
+      'interventions',
+      `SELECT * FROM resources FETCH form, module, module.media, slides, slides.question, slides.media;`)
+      .then((resources: [Resource[]]) => {
+        this.#storageSvc.query(
+          'interventions',
+          `SELECT * FROM papers ORDER BY created DESC FETCH answers;`)
+          .then((papers: [PaperWithResource[]]) => {
+            papers[0].forEach((paper: Paper) => {
+              paper.resource = resources[0].find(resource => resource.id === paper.resource)
             })
 
-            this.#papers.set(papers || [])
+            this.#papers.set(papers[0])
           })
       })
   }
@@ -45,10 +45,10 @@ export class PapersService {
     if (paper.answers.length > 0) {
       let answers_str = paper.answers.map(answer => JSON.stringify(answer)).join(',')
 
-      this.#storageSvc.query_interv<Answer>(`INSERT INTO answers [${answers_str}]`)
-        .then(async (answers: Answer[]) => {
-          await this.#outcomeSvc.send_answers(answers)
-          await this.#outcomeSvc.send_paper(new PaperToPush(paper.id, answers))
+      this.#storageSvc.query('interventions', `INSERT INTO answers [${answers_str}];`)
+        .then(async (answers: [Answer[]]) => {
+          await this.#outcomeSvc.send_answers(answers[0])
+          await this.#outcomeSvc.send_paper(new PaperToPush(paper.id, answers[0]))
         })
 
     } else {

@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { DOCUMENT } from '@angular/common'
 
-import { Surreal as SurrealJS } from 'surrealdb.js'
+import { Surreal } from 'surrealdb/lib/full.js'
 
 import { StorageService } from '../storage.service'
 import { OUTER_DB } from '../../constants'
@@ -13,7 +13,7 @@ export class GlobalAuthService {
   #storageSvc = inject(StorageService)
   #document   = inject(DOCUMENT)
 
-  #outer_db = new SurrealJS()
+  #outer_db = new Surreal()
   #db_url   = this.#document.location.hostname === 'localhost' ? "ws://localhost:8000" : OUTER_DB
 
   #global_token = signal("")
@@ -23,19 +23,19 @@ export class GlobalAuthService {
   ready  = computed(() => this.#ready())
 
   #update_on_storage_ready = effect(() => {
-    if (this.#storageSvc.ready()) this.#load()
+    if (this.#storageSvc.ready()) setTimeout(() => this.#load(), 1) // wait for storage service to be ready
   })
 
   async global_login(username: string): Promise<boolean> {
-    await this.#outer_db.connect(this.#db_url)
+    await this.#outer_db.connect(this.#db_url, undefined)
     return await this.#signin(this.#outer_db, username)
   }
 
-  async global_authenticate(db: SurrealJS): Promise<boolean> {
+  async global_authenticate(db: Surreal): Promise<boolean> {
     return await db.authenticate(this.#global_token())
   }
 
-  async #signin(db: SurrealJS, username: string): Promise<boolean> {
+  async #signin(db: Surreal, username: string): Promise<boolean> {
     const credentials = { namespace: 'global', database: 'main', scope: 'user', username };
 
     try {
@@ -51,7 +51,7 @@ export class GlobalAuthService {
 
   #set_global_token(a_token: string) {
     this.#storageSvc
-      .query_global<string>(`DEFINE PARAM $global_token VALUE "${a_token}";`)
+      .query_global(`DEFINE PARAM $global_token VALUE "${a_token}";`)
       .then(() => {
         this.#global_token.set(a_token)
       })
@@ -59,9 +59,9 @@ export class GlobalAuthService {
 
   #load() {
     this.#storageSvc
-      .query_global<string>(`RETURN $global_token;`)
-      .then(async (a_token) => {
-        if (a_token.length === 0 || a_token[0].length === 0) {
+      .query_global(`RETURN $global_token;`)
+      .then(async (a_token: [string]) => {
+        if (a_token[0] === null) {
 
           // redirect to login
           throw new Error("Failed to load global token: global/auth.service")

@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { DOCUMENT } from '@angular/common'
 
-import { Surreal as SurrealJS } from 'surrealdb.js'
+import { Surreal } from 'surrealdb/lib/full.js'
 
 import { StorageService } from '../storage.service'
 import { OUTER_DB } from '../../constants'
@@ -15,7 +15,7 @@ export class IntervAuthService {
   #storageSvc = inject(StorageService)
   #document   = inject(DOCUMENT)
 
-  #outer_db = new SurrealJS()
+  #outer_db = new Surreal()
   #db_url   = this.#document.location.hostname === 'localhost' ? "ws://localhost:8000" : OUTER_DB
 
   // ????
@@ -40,13 +40,13 @@ export class IntervAuthService {
     return await this.#signin(this.#outer_db, project, pass)
   }
 
-  async interv_authenticate(db: SurrealJS): Promise<boolean> {
+  async interv_authenticate(db: Surreal): Promise<boolean> {
     if (!this.#globalAuthSvc.authenticated()) throw new Error("Global auth required: interventions/auth.service")
 
     return await db.authenticate(this.#interv_token())
   }
 
-  async #signin(db: SurrealJS, project: string, pass: string): Promise<boolean> {
+  async #signin(db: Surreal, project: string, pass: string): Promise<boolean> {
     const credentials = { namespace: 'interventions', database: project, scope: 'user', pass };
 
     try {
@@ -62,7 +62,7 @@ export class IntervAuthService {
 
   #set_interv_token(a_token: string) {
     this.#storageSvc
-      .query_global<string>(`DEFINE PARAM $interv_token VALUE "${a_token}";`) // should use global ns
+      .query_global(`DEFINE PARAM $interv_token VALUE "${a_token}";`) // should use global ns
       .then(() => {
         this.#interv_token.set(a_token)
       })
@@ -70,9 +70,10 @@ export class IntervAuthService {
 
   #load() {
     this.#storageSvc
-      .query_global<string>(`RETURN $interv_token;`) // should use global ns
-      .then(async (a_token) => {
-        if (a_token.length === 0 || a_token[0].length === 0) {
+      .query_global(`RETURN $interv_token;`) // should use global ns
+      .then(async (a_token: [string]) => {
+        if (a_token[0] === null) {
+
           // redirect to join project
           throw new Error("Failed to load interv token: interventions/auth.service")
 
