@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 platforms=("linux/arm64" "linux/amd64")
 package_name=$(jq -r '.name' package.json)

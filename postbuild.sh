@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 ls dist/browser/ | grep main | xargs -I[] sed -i 's/surrealdb/\.\/surrealdb/g' ./dist/browser/[]
 ls dist/browser/ | grep chunk | xargs -I[] sed -i 's/surrealdb/\.\/surrealdb/g' ./dist/browser/[]
