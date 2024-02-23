@@ -14,6 +14,13 @@ export class HomeComponent {
   #interv_authSvc   = inject(IntervAuthService)
   #global_authSvc   = inject(GlobalAuthService)
 
+  foo() {
+    navigator.serviceWorker.ready.then(function(swRegistration) {
+      // @ts-ignore
+      return swRegistration.sync.register('myFirstSync');
+    });
+  }
+
   async global_login() {
     console.log(await this.#global_authSvc.global_login("kenny"))
 

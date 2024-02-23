@@ -35,7 +35,7 @@ export class ContentService {
     ) {
 
       if (navigator.onLine) {
-        await this.#outer_db.connect(this.#db_url, undefined)
+        await this.#outer_db.connect(this.#db_url)
         await this.#authSvc.interv_authenticate(this.#outer_db)
 
         // sync locales table

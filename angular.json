@@ -37,6 +37,11 @@
               "src/assets",
               "src/manifest.webmanifest",
               {
+                "input": "./src/app/providers/services/workers/",
+                "glob": "bg-sync.js",
+                "output": "assets/workers"
+              },
+              {
                 "input": "./node_modules/surrealdb.wasm/dist/full/",
                 "glob": "**/*.{wasm,js,js.map}",
                 "output": "surrealdb/dist/full"

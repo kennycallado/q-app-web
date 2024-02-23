@@ -27,7 +27,7 @@ export class GlobalAuthService {
   })
 
   async global_login(username: string): Promise<boolean> {
-    await this.#outer_db.connect(this.#db_url, undefined)
+    await this.#outer_db.connect(this.#db_url)
     return await this.#signin(this.#outer_db, username)
   }
 
