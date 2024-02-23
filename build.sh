@@ -1,6 +1,6 @@
 #!/bin/bash
 
-platforms=("linux/amd64" "linux/arm64")
+platforms=("linux/arm64" "linux/amd64")
 package_name=$(jq -r '.name' package.json)
 package_version=$(jq -r '.version' package.json)
 
