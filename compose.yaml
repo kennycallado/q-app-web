@@ -11,18 +11,23 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
 
   surrealdb:
-    image: kennycallado/surreal:0.1.0
+    image: kennycallado/surreal:latest
     container_name: surrealdb
     ports:
       - "8000:8000"
     command:
-      # - start
-      # - memory
       - -A
-      # - --auth
-      - --no-banner
+      # - --no-banner
       # - --log=trace
       # - --log=info
       - --user=root
       - --pass=root
       - --bind=0.0.0.0:8000
+
+  auth:
+    image: kennycallado/q-app-manager:latest
+    container_name: auth
+    environment:
+      ROCKET_DATABASES: '{store={host="surrealdb", port=8000, username="root", password="root"}}'
+    ports:
+      - "9000:8080"

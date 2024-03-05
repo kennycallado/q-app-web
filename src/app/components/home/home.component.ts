@@ -15,23 +15,15 @@ export class HomeComponent {
   #global_authSvc   = inject(GlobalAuthService)
 
   async global_login() {
-    console.log(await this.#global_authSvc.global_login("kenny"))
-
-    setTimeout(() => {
-      console.log(`globally auth: ${this.#global_authSvc.authenticated()}`)
-      }, 500)
+    await this.#global_authSvc.login({ username: "kenny" })
   }
 
   async interv_login() {
-    console.log(await this.#interv_authSvc.interv_login("demo", "01HJTEBG4Y1EAXPATENCDCT7WW"))
-
-    setTimeout(() => {
-      console.log(`interv auth: ${this.#interv_authSvc.authenticated()}`)
-      } , 500)
+    await this.#interv_authSvc.join({ ns: "interventions", db: "demo", sc: "user", pass: "01HJTEBG4Y1EAXPATENCDCT7WW" })
   }
 
   async getEso(entity: string) {
-    let result = this.#storageSvc.query_interv(`SELECT * FROM ${entity};`)
+    let result = this.#storageSvc.query('interventions', `SELECT * FROM ${entity};`)
 
     console.log((await result)[0])
   }

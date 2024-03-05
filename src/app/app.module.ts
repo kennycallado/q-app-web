@@ -1,9 +1,10 @@
 import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import { HttpClientModule } from '@angular/common/http';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { AppRoutingModule } from './app-routing.module';
+
+import { AppComponent } from './app.component';
 
 import { LayoutModule } from './modules/layout/layout.module';
 import { AboutComponent } from './components/about/about.component';
@@ -19,6 +20,7 @@ import { HomeComponent } from './components/home/home.component';
   ],
   imports: [
     LayoutModule,
+    HttpClientModule,
     BrowserModule,
     AppRoutingModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
