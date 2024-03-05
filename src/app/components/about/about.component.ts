@@ -11,8 +11,4 @@ export class AboutComponent {
   #scoreSvc = inject(ScoresService)
 
   scores  = this.#scoreSvc.scores
-
-  get_score(): Object[] {
-    return this.scores().map(score => score.score)
-  }
 }

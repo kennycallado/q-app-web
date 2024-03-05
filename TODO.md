@@ -1,6 +1,12 @@
 ## TODO:
 
 - [ ] auth: guard for routing
+  - canActivate is called before the services are ready
+  - needs [init](https://angular.io/api/core/APP_INITIALIZER)
+  - on refresh:
+    - for now redirect to login and if it's logged redirect to home
+
+- [ ] about: score didn't update on changes
 - [ ] store: all calls for query_... to query
 
 - [ ] global auth: for some reason needs a setTimeout

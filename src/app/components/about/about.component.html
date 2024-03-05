@@ -2,4 +2,10 @@
 <!-- <pre>{{ user() | json }}</pre> -->
 
 <p>User score:</p>
-@if (scores().length > 0) { <pre>{{ get_score() | json }}</pre> }
+@if (scores().length > 0) {
+  <pre>
+  @for (score of scores(); track score.id) {
+    {{ score | json }}
+  }
+  </pre>
+}
