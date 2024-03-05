@@ -2,7 +2,7 @@
 
 platforms=("linux/arm64" "linux/amd64")
 package_name=$(jq -r '.name' package.json)
-package_version=$(jq -r '.version' package.json)
+package_version="v$(jq -r '.version' package.json)"
 
 # Build the project
 echo "Building the project..."
