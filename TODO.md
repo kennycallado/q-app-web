@@ -1,5 +1,6 @@
 ## TODO:
 
+- [ ] auth: guard for routing
 - [ ] store: all calls for query_... to query
 
 - [ ] global auth: for some reason needs a setTimeout
@@ -15,7 +16,7 @@
   - [ ] login interface
   - [ ] join project interface
 
-- [ ] resources: maybe there is more services with different ready pattern
+- [X] resources: maybe there is more services with different ready pattern
 
 - [ ] offline: some services connect on init
   - [ ] online service
