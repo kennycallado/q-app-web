@@ -5,8 +5,8 @@ import { GlobalAuthService } from './services/global/auth.service';
 import { IntervAuthService } from './services/interventions/auth.service';
 
 export const GlobalAuthGuard: CanActivateFn = (route, state) => {
-  const router = inject(Router)
   const auth   = inject(GlobalAuthService)
+  const router = inject(Router)
 
   if (auth.authenticated()) return true
 
@@ -15,11 +15,11 @@ export const GlobalAuthGuard: CanActivateFn = (route, state) => {
 }
 
 export const IntervAuthGuard: CanActivateFn = (route, state) => {
-  const router = inject(Router)
   const auth   = inject(IntervAuthService)
+  const router = inject(Router)
 
   if (auth.authenticated()) return true
 
-  router.navigate(['/home'], { queryParams: { returnUrl: state.url } })
+  router.navigate(['/join'], { queryParams: { returnUrl: state.url } })
   return false;
 };

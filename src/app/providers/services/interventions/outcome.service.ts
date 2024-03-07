@@ -16,7 +16,7 @@ import { Score, TScore } from '../../models/score.model'
   providedIn: 'root'
 })
 export class OutcomeService {
-  #authSvc    = inject(IntervAuthService)
+  #intervAuthSvc = inject(IntervAuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -28,14 +28,11 @@ export class OutcomeService {
   ready = computed(() => this.#ready())
 
   #update = effect(async () => {
-    if (
-        this.#storageSvc.ready() &&
-        this.#authSvc.ready()
-    ) {
+    if (this.#storageSvc.ready() && this.#intervAuthSvc.ready()) {
 
       if (navigator.onLine) {
-        await this.#outer_db.connect(this.#db_url, undefined)
-        await this.#authSvc.interv_authenticate(this.#outer_db)
+        await this.#outer_db.connect(this.#db_url)
+        await this.#intervAuthSvc.interv_authenticate(this.#outer_db)
 
         // init live queries
         await this.#live_answers()
@@ -45,7 +42,7 @@ export class OutcomeService {
 
       this.#ready.set(true)
     }
-  }, { allowSignalWrites: true })
+  })
 
   async send_answers(answers: Answer[]): Promise<any> {
     let answers_str = answers.map((answer: Answer) => JSON.stringify(answer)).join(',')

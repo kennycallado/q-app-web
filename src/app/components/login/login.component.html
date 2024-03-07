@@ -1,4 +1,22 @@
-<div class="mt-3">
-  <button class="btn btn-primary me-3" (click)="global_login()">Global login</button>
-  <button class="btn btn-primary me-3" (click)="interv_login()">Interv login</button>
+<div class="mt-5">
+  <div class="card">
+    <div class="card-header text-center">Login</div>
+    <div class="card-body">
+
+        <div class="input-group">
+          <input class="form-control"
+            (keyup.enter)="submit(userToken.value)"
+            #userToken
+            name="userToken"
+            type="text"
+            placeholder="User token"
+            aria-label="">
+          <button class="btn btn-outline-primary"
+            (click)="submit(userToken.value)"
+            type="button">Send</button>
+        </div>
+        <p class="text-center small text-warning">Insert your personal user token.</p>
+
+    </div>
+  </div>
 </div>

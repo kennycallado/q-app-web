@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { DOCUMENT } from '@angular/common'
-import { catchError } from 'rxjs'
+import { lastValueFrom } from 'rxjs'
 
 import { Surreal } from 'surrealdb/lib/full.js'
 
@@ -32,19 +32,29 @@ export class IntervAuthService {
     if (this.#storageSvc.ready() && this.#globalAuthSvc.authenticated()) this.#load()
   })
 
-  async join(data: AuthJoin) {
+  logout() {
+    this.#set_interv_token("")
+  }
+
+  async join(data: AuthJoin): Promise<boolean> {
     if (!this.#globalAuthSvc.authenticated()) throw new Error("Global auth required: interventions/auth.service")
 
-    this.#globalAuthSvc
-      .signin(this.#auth_url + "/join", data)
-      .subscribe(async (result) => {
-        if (typeof result === 'object') {
-          this.#set_interv_token(result.token)
+    const url = this.#auth_url + "/join"
+    const prom$ = lastValueFrom(this.#globalAuthSvc.signin(url, data)).then(async (result) => {
+      if (typeof result === 'object') {
+        this.#set_interv_token(result.token)
 
-          await this.#outer_db.connect(this.#db_url, undefined)
-          await this.interv_authenticate(this.#outer_db)
-        } else this.#set_interv_token("")
-      })
+        await this.#outer_db.connect(this.#db_url)
+        await this.interv_authenticate(this.#outer_db)
+
+        return true
+      }
+
+      this.#set_interv_token("")
+      return false
+    })
+
+    return prom$
   }
 
   async interv_authenticate(db: Surreal): Promise<boolean> {
@@ -56,7 +66,7 @@ export class IntervAuthService {
   #set_interv_token(a_token: string) {
     this.#storageSvc
       .query_global(`DEFINE PARAM $interv_token VALUE "${a_token}";`) // should use global ns
-      .then(() => { this.#interv_token.set(a_token) })
+      .then(() => { this.#interv_token.set(a_token); if (!this.ready()) this.#ready.set(true) })
   }
 
   #load() {

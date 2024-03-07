@@ -1,8 +1,7 @@
 import { Component, effect, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { IntervAuthService } from '../../providers/services/interventions/auth.service';
 import { GlobalAuthService } from '../../providers/services/global/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,21 +9,18 @@ import { Router } from '@angular/router';
   styleUrl: './login.component.sass'
 })
 export class LoginComponent {
+  #globalAuthSvc = inject(GlobalAuthService)
   #router = inject(Router)
-  #interv_authSvc = inject(IntervAuthService)
-  #global_authSvc = inject(GlobalAuthService)
+  #route  = inject(ActivatedRoute)
 
-  #update = effect(() => {
-    if (this.#global_authSvc.ready() && this.#global_authSvc.authenticated()) this.#router.navigate(['/home'])
+  #activate_root = effect(() => {
+    if (this.#globalAuthSvc.authenticated()) {
+      const returnUrl = this.#route.snapshot.queryParams['returnUrl'] || '/home';
+      this.#router.navigateByUrl(returnUrl);
+    }
   })
 
-  async global_login() {
-    await this.#global_authSvc.login({ username: "kenny" })
-  }
-
-  async interv_login() {
-    await this.#interv_authSvc.join({ ns: "interventions", db: "demo", sc: "user", pass: "01HJTEBG4Y1EAXPATENCDCT7WW" })
-
-    this.#router.navigate(['/home'])
+  async submit(username: string) {
+    if (!await this.#globalAuthSvc.login({ username })) { /** Show error dialog */ }
   }
 }

@@ -1,7 +1,12 @@
 import { Component,
+  inject,
+  effect,
+  // signal,
   // ElementRef, HostListener, ViewChild,
-  inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+  } from '@angular/core'
+// import { Router } from '@angular/router'
+import { GlobalAuthService } from '../../../../providers/services/global/auth.service'
+import { IntervAuthService } from '../../../../providers/services/interventions/auth.service'
 
 @Component({
   selector: 'app-navigation',
@@ -9,10 +14,17 @@ import { Router } from '@angular/router';
   styleUrl: './navigation.component.sass'
 })
 export class NavigationComponent {
-  #router   = inject(Router)
+  #globalAuthSvc = inject(GlobalAuthService)
+  #intevAuthSvc = inject(IntervAuthService)
+  // #router = inject(Router)
   // #eRef     = inject(ElementRef)
 
-  is_authenticated = signal(false);
+  // is_authenticated = signal(false);
+  is_authenticated = this.#globalAuthSvc.authenticated()
+
+  update = effect(() => {
+    this.is_authenticated = this.#globalAuthSvc.authenticated()
+  })
 
   // detect click outside to close the menu
   // @ViewChild('burger') burger: ElementRef
@@ -25,8 +37,10 @@ export class NavigationComponent {
   // }
 
   logout(): void {
-    // this.#authSvc.logout();
-    this.#router.navigate(['/login']);
+    this.#intevAuthSvc.logout()
+    this.#globalAuthSvc.logout()
+
+    location.reload()
 
     return ;
   }

@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Observable, catchError, lastValueFrom } from 'rxjs'
 import { HttpClient } from '@angular/common/http'
 import { DOCUMENT } from '@angular/common'
-import { Observable, catchError } from 'rxjs'
 
 import { Surreal } from 'surrealdb/lib/full.js'
 
@@ -32,19 +32,28 @@ export class GlobalAuthService {
     if (this.#storageSvc.ready()) setTimeout(() => this.#load(), 1) // wait for storage service to be ready
   })
 
-  async login(data: AuthLogin): Promise<void> {
-    const url = this.#auth_url + "/login"
+  logout() {
+    this.#set_global_token("")
+  }
 
-    this.signin(url, data)
-      .subscribe(async (result) => {
+  async login(data: AuthLogin): Promise<boolean> {
+    const url = this.#auth_url + "/login"
+    const prom$ = lastValueFrom(this.signin(url, data))
+      .then(async (result) => {
         if (typeof result === 'object') {
           this.#set_global_token(result.token)
 
-          await this.#outer_db.connect(this.#db_url, undefined)
+          await this.#outer_db.connect(this.#db_url)
           await this.global_authenticate(this.#outer_db)
 
-        } else this.#set_global_token("")
+          return true
+        }
+
+        this.#set_global_token("")
+        return false
       })
+
+    return prom$
   }
 
   async global_authenticate(db: Surreal): Promise<boolean> {
@@ -54,16 +63,16 @@ export class GlobalAuthService {
   }
 
   signin(url: string, body: Object): Observable<AuthUser | boolean> {
-    let headers = {
+    const headers = {
       "Accept": "application/json",
       "Content-Type": "application/json",
       "Authorization": `Bearer ${this.#global_token()}`
     }
 
-    return this.#http.post<AuthUser>(url, body, { headers })
+    const obs$ = this.#http.post<AuthUser>(url, body, { headers })
       .pipe(
         catchError((err: Error) => {
-          console.log(err) // manage status code to retry or not
+          // console.log(err) // manage status code to retry or not
           console.log("Failed to login: global/auth.service")
 
           // probably not the best way to handle this
@@ -71,6 +80,8 @@ export class GlobalAuthService {
           return Promise.resolve(false)
         }),
       )
+
+    return obs$
   }
 
   #set_global_token(a_token: string) {

@@ -10,13 +10,15 @@ import { LayoutModule } from './modules/layout/layout.module';
 import { AboutComponent } from './components/about/about.component';
 import { LoginComponent } from './components/login/login.component';
 import { HomeComponent } from './components/home/home.component';
+import { JoinComponent } from './components/join/join.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AboutComponent,
     LoginComponent,
-    HomeComponent
+    HomeComponent,
+    JoinComponent
   ],
   imports: [
     LayoutModule,

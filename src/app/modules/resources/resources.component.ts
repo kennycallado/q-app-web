@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 import { PapersService } from '../../providers/services/papers.service';
 
@@ -14,6 +14,10 @@ export class ResourcesComponent {
   #papersSvc = inject(PapersService)
 
   papers = this.#papersSvc.papers
+
+  ngAfterViewInit() {
+    this.#papersSvc.load()
+  }
 
   // <!-- maybe a popup that is syncing -->
 

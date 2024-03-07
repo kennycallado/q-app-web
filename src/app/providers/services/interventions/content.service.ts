@@ -17,7 +17,7 @@ import { Slide, TSlide } from '../../models/slide.model'
   providedIn: 'root'
 })
 export class ContentService {
-  #authSvc    = inject(IntervAuthService)
+  #intervAuthSvc = inject(IntervAuthService)
   #storageSvc = inject(StorageService)
   #injector   = inject(Injector) // very important to avoid circular dependencies
   #document   = inject(DOCUMENT)
@@ -29,14 +29,11 @@ export class ContentService {
   ready = computed(() => this.#ready())
 
   #update = effect(async () => {
-    if (
-        this.#storageSvc.ready() &&
-        this.#authSvc.ready()
-    ) {
+    if (this.#storageSvc.ready() && this.#intervAuthSvc.ready()) {
 
       if (navigator.onLine) {
-        await this.#outer_db.connect(this.#db_url, undefined)
-        await this.#authSvc.interv_authenticate(this.#outer_db)
+        await this.#outer_db.connect(this.#db_url)
+        await this.#intervAuthSvc.interv_authenticate(this.#outer_db)
 
         // sync locales table
         await this.#sync_locales()
@@ -50,7 +47,7 @@ export class ContentService {
 
       this.#ready.set(true)
     }
-  }, { allowSignalWrites: true })
+  })
 
   async #sync_locales() { // has no types
     let coming_locales = await this.#outer_db.select('locales')
